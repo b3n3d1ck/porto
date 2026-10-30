@@ -1,0 +1,205 @@
+[
+  {
+    "title": "PROJECT-GLOW-BTC",
+    "description": "",
+    "tech": [
+      "HTML"
+    ],
+    "category": "Development",
+    "repository": "https://github.com/b3n3d1ck/PROJECT-GLOW-BTC",
+    "url": "https://github.com/b3n3d1ck/PROJECT-GLOW-BTC",
+    "language": "HTML"
+  },
+  {
+    "title": "Project-Bot-BTC-GLOW",
+    "description": "",
+    "tech": [
+      "Python"
+    ],
+    "category": "Development",
+    "repository": "https://github.com/b3n3d1ck/Project-Bot-BTC-GLOW",
+    "url": "https://github.com/b3n3d1ck/Project-Bot-BTC-GLOW",
+    "language": "Python"
+  },
+  {
+    "title": "Project-Bot-BTC-GLOW-main",
+    "description": "",
+    "tech": [
+      "Python"
+    ],
+    "category": "Development",
+    "repository": "https://github.com/b3n3d1ck/Project-Bot-BTC-GLOW-main",
+    "url": "https://github.com/b3n3d1ck/Project-Bot-BTC-GLOW-main",
+    "language": "Python"
+  },
+  {
+    "title": "ai-scam-detector",
+    "description": "Cek pesan penipuan WA/SMS Indonesia dari screenshot atau teks. Gratis, jalan di browser, tidak ada data yang dikirim.",
+    "tech": [
+      "HTML",
+      "cybersecurity",
+      "fraud-detection",
+      "indonesia",
+      "javascript",
+      "ocr",
+      "phishing",
+      "scam-detection",
+      "tesseract-js",
+      "whatsapp"
+    ],
+    "category": "Security",
+    "repository": "https://github.com/b3n3d1ck/ai-scam-detector",
+    "url": "https://scam-detector-sece.vercel.app/",
+    "language": "HTML"
+  },
+  {
+    "title": "card_lock_api",
+    "description": "REST API (Laravel 12 + Sanctum) untuk kunci pintu RFID: pintu, kartu, log akses, alert, izin.",
+    "tech": [
+      "PHP",
+      "access-control",
+      "laravel",
+      "rest-api",
+      "rfid",
+      "sanctum"
+    ],
+    "category": "Development",
+    "repository": "https://github.com/b3n3d1ck/card_lock_api",
+    "url": "https://github.com/b3n3d1ck/card_lock_api",
+    "language": "PHP"
+  },
+  {
+    "title": "card_lock_app",
+    "description": "",
+    "tech": [
+      "JavaScript"
+    ],
+    "category": "Development",
+    "repository": "https://github.com/b3n3d1ck/card_lock_app",
+    "url": "https://card-lock-app.vercel.app",
+    "language": "JavaScript"
+  },
+  {
+    "title": "cps-call",
+    "description": "",
+    "tech": [
+      "JavaScript"
+    ],
+    "category": "Development",
+    "repository": "https://github.com/b3n3d1ck/cps-call",
+    "url": "https://github.com/b3n3d1ck/cps-call",
+    "language": "JavaScript"
+  },
+  {
+    "title": "ghostmap",
+    "description": "",
+    "tech": [
+      "Go"
+    ],
+    "category": "Security",
+    "repository": "https://github.com/b3n3d1ck/ghostmap",
+    "url": "https://github.com/b3n3d1ck/ghostmap",
+    "language": "Go"
+  },
+  {
+    "title": "murs",
+    "description": "",
+    "tech": [
+      "Python"
+    ],
+    "category": "Security",
+    "repository": "https://github.com/b3n3d1ck/murs",
+    "url": "https://github.com/b3n3d1ck/murs",
+    "language": "Python"
+  },
+  {
+    "title": "nightjar",
+    "description": "A workspace for reviewing web security findings",
+    "tech": [
+      "TypeScript",
+      "web-checker",
+      "web-scanner",
+      "web-security-audit",
+      "web-security-research",
+      "web-security-scanner",
+      "web-security-tool"
+    ],
+    "category": "Security",
+    "repository": "https://github.com/b3n3d1ck/nightjar",
+    "url": "https://nightjar-tau.vercel.app",
+    "language": "TypeScript"
+  },
+  {
+    "title": "orbitdrop",
+    "description": "",
+    "tech": [
+      "C#"
+    ],
+    "category": "Development",
+    "repository": "https://github.com/b3n3d1ck/orbitdrop",
+    "url": "https://github.com/b3n3d1ck/orbitdrop",
+    "language": "C#"
+  },
+  {
+    "title": "scam-detector",
+    "description": "",
+    "tech": [
+      "Python"
+    ],
+    "category": "Security",
+    "repository": "https://github.com/b3n3d1ck/scam-detector",
+    "url": "https://scam-detector-new.vercel.app",
+    "language": "Python"
+  },
+  {
+    "title": "shellhound",
+    "description": "",
+    "tech": [
+      "Go"
+    ],
+    "category": "Security",
+    "repository": "https://github.com/b3n3d1ck/shellhound",
+    "url": "https://github.com/b3n3d1ck/shellhound",
+    "language": "Go"
+  },
+  {
+    "title": "voipweb-master",
+    "description": "Softphone berbasis web (Next.js) untuk server SIP Kamailio: dialpad, riwayat panggilan, auth.",
+    "tech": [
+      "TypeScript",
+      "kamailio",
+      "kamailio-configuration",
+      "nextjs",
+      "sip",
+      "typescript",
+      "voip"
+    ],
+    "category": "Development",
+    "repository": "https://github.com/b3n3d1ck/voipweb-master",
+    "url": "https://github.com/b3n3d1ck/voipweb-master",
+    "language": "TypeScript"
+  },
+  {
+    "title": "web-security-auditor",
+    "description": "Audit keamanan web: masukkan URL, keluar rapor A-F berisi celah + cara perbaikinya. PHP, tanpa dependency.",
+    "tech": [
+      "PHP",
+      "appsec",
+      "infosectools",
+      "php",
+      "security",
+      "security-audit",
+      "security-auditing-tool",
+      "security-scanner",
+      "web-security",
+      "web-security-audit",
+      "web-security-scanner",
+      "web-security-tool",
+      "website-scanner"
+    ],
+    "category": "Security",
+    "repository": "https://github.com/b3n3d1ck/web-security-auditor",
+    "url": "https://github.com/b3n3d1ck/web-security-auditor",
+    "language": "PHP"
+  }
+]
