@@ -107,10 +107,59 @@ function Heading({ n, title, sub, skew }: { n: string; title: string; sub: strin
     <Reveal variant="blur" skew={skew}>
       <div className="section-heading">
         <span className="number">{n}</span>
-        <h2>{title}</h2>
+        <h2>{title.split('').map((c, i) => (
+          <motion.span className="heading-char" key={i}
+            initial={{ opacity: 0, y: 26, rotateX: -55 }}
+            whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+            viewport={{ once: true, margin: '-8% 0px' }}
+            transition={{ duration: 0.55, delay: i * 0.022, ease }}>
+            {c === ' ' ? ' ' : c}
+          </motion.span>
+        ))}</h2>
         <span className="section-sub">{sub}</span>
       </div>
     </Reveal>
+  );
+}
+
+// Magnetic wrapper: the child drifts toward the cursor and snaps back on leave.
+// Hand-rolled with springs, no library — desktop pointers only.
+function Magnetic({ children, strength = 22 }: { children: ReactNode; strength?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const sx = useSpring(x, { stiffness: 220, damping: 16, mass: 0.3 });
+  const sy = useSpring(y, { stiffness: 220, damping: 16, mass: 0.3 });
+  return (
+    <motion.div ref={ref} className="magnetic" style={{ x: sx, y: sy }}
+      onPointerMove={(e) => {
+        if (reduced || e.pointerType === 'touch') return;
+        const r = ref.current?.getBoundingClientRect();
+        if (!r) return;
+        x.set(((e.clientX - r.left) / r.width - 0.5) * strength);
+        y.set(((e.clientY - r.top) / r.height - 0.5) * strength);
+      }}
+      onPointerLeave={() => { x.set(0); y.set(0); }}>
+      {children}
+    </motion.div>
+  );
+}
+
+// Hand-drawn circuit trace: an SVG path that draws itself when scrolled into view.
+function TraceLine({ className = '' }: { className?: string }) {
+  return (
+    <svg className={'trace-line ' + className} viewBox="0 0 320 60" fill="none" aria-hidden="true">
+      <motion.path d="M4 52 H96 L128 20 H224 L256 52 H316" stroke="var(--red)" strokeWidth="1.5"
+        initial={{ pathLength: 0, opacity: 0 }}
+        whileInView={{ pathLength: 1, opacity: 1 }}
+        viewport={{ once: true, margin: '-10% 0px' }}
+        transition={{ duration: 1.6, ease }} />
+      <motion.circle cx="128" cy="20" r="3.5" fill="var(--paper)" stroke="var(--red)" strokeWidth="1.5"
+        initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.9, type: 'spring', stiffness: 300, damping: 14 }} />
+      <motion.circle cx="316" cy="52" r="3.5" fill="var(--red)"
+        initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 1.4, type: 'spring', stiffness: 300, damping: 14 }} />
+    </svg>
   );
 }
 
@@ -149,12 +198,30 @@ function SpatialObject() {
       onPointerMove={(e) => { if (reduced) return; const r = e.currentTarget.getBoundingClientRect(); px.set(((e.clientX - r.left) / r.width - 0.5) * 50); py.set(-((e.clientY - r.top) / r.height - 0.5) * 50); }}
       onPointerLeave={() => { px.set(0); py.set(0); }}>
       <span className="spatial-label">EXPERIMENT 001 / MOVE AROUND</span>
-      <motion.div className="spatial-cube" style={{ rotateX: reduced ? -18 : rx, rotateY: reduced ? 25 : ry, rotateZ: reduced ? -18 : rz }}>
+      <motion.div className="spatial-cube spatial-spin" style={{ rotateX: reduced ? -18 : rx, rotateY: reduced ? 25 : ry, rotateZ: reduced ? -18 : rz }}>
         {['ab.', '↗', '{ }', '01', '+', 'ab.'].map((face, i) => <div key={i} className={'cube-face face-' + i}>{face}</div>)}
       </motion.div>
       <span className="spatial-axis">X ─── Y ─── Z</span>
     </div>
   );
+}
+
+// Cursor-following glow that adds depth without touching the layout.
+// Fixed layer, pointer-events none, springs behind the cursor.
+function CursorGlow() {
+  const reduced = useReducedMotion();
+  const x = useMotionValue(-400);
+  const y = useMotionValue(-400);
+  const sx = useSpring(x, { stiffness: 120, damping: 22, mass: 0.6 });
+  const sy = useSpring(y, { stiffness: 120, damping: 22, mass: 0.6 });
+  useEffect(() => {
+    if (reduced) return;
+    const move = (e: PointerEvent) => { if (e.pointerType !== 'touch') { x.set(e.clientX); y.set(e.clientY); } };
+    window.addEventListener('pointermove', move, { passive: true });
+    return () => window.removeEventListener('pointermove', move);
+  }, [reduced, x, y]);
+  if (reduced) return null;
+  return <motion.div className="cursor-glow" aria-hidden="true" style={{ x: sx, y: sy }} />;
 }
 
 function MobileMenu({ onClose, goto }: { onClose: () => void; goto: (id: string) => void }) {
@@ -302,17 +369,17 @@ function Intro({ onDone }: { onDone: () => void }) {
     if (reduced) { onDone(); return; }
     let v = 0;
     const started = performance.now();
-    const minDuration = 2600;
+    const minDuration = 1300;
     const id = setInterval(() => {
       const elapsed = performance.now() - started;
       const remaining = Math.max(0, minDuration - elapsed);
       // Crawl while time remains, then finish with eased steps.
-      const maxStep = remaining > 500 ? 4 : 9 + Math.floor(Math.random() * 9);
-      v = Math.min(100, v + 1 + Math.floor(Math.random() * maxStep));
+      const maxStep = remaining > 300 ? 7 : 12 + Math.floor(Math.random() * 12);
+      v = Math.min(100, v + 2 + Math.floor(Math.random() * maxStep));
       if (remaining <= 0 && v >= 100) { setCount(100); clearInterval(id); return; }
       if (remaining <= 0) v = Math.min(99, v);
       setCount(v);
-    }, 120);
+    }, 90);
     return () => clearInterval(id);
   }, [reduced, onDone]);
   if (reduced) return null;
@@ -427,6 +494,7 @@ export default function App() {
       <AnimatePresence>{!ready && <Intro onDone={() => setReady(true)} />}</AnimatePresence>
       <div className="background-grid" />
       <motion.div className="background-glow" aria-hidden="true" style={{ y: glowY, opacity: glowOpacity }} />
+      <CursorGlow />
       <motion.div className="reading-progress" style={{ scaleX: progress }} />
 
       <div className="site-shell">
@@ -544,6 +612,7 @@ export default function App() {
 
           <section id="journey" className="section">
             <Heading n="04" title="Learning, in motion." sub="the journey so far" skew={skew} />
+            <TraceLine className="trace-journey" />
             <div className="journey-grid">
               <div>
                 <Reveal variant="rise" skew={skew}><h3 className="column-label">EXPERIENCE & HIGHLIGHTS</h3></Reveal>
@@ -589,13 +658,14 @@ export default function App() {
         <main>
           <section id="contact" className="section contact">
             <Heading n="05" title="Start a conversation." sub="good things begin here" skew={skew} />
+            <TraceLine className="trace-contact" />
             <Reveal variant="scale" skew={skew}>
               <div className="contact-grid">
                 <div>
                   <span className="eyebrow">HAVE SOMETHING IN MIND?</span>
                   <h2>Let’s make<br /><em>it happen.</em><span className="contact-star">✳</span></h2>
                   <p>Project baru, ide menarik, atau sekadar bertukar perspektif.<br />Saya selalu terbuka untuk percakapan yang baik.</p>
-                  <a className="button button-dark" href={'mailto:' + personalData.email}>Say hello <Arrow /></a>
+                  <Magnetic><a className="button button-dark" href={'mailto:' + personalData.email}>Say hello <Arrow /></a></Magnetic>
                 </div>
                 <div className="contact-links">
                   <span className="eyebrow">FIND ME ELSEWHERE</span>
