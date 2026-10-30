@@ -35,19 +35,16 @@ function ThemeToggle() {
     <motion.button type="button" className="theme-toggle" onClick={toggle}
       aria-label="Dark mode" aria-pressed={dark} title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       whileHover={reduced ? undefined : { scale: 1.06 }} whileTap={reduced ? undefined : { scale: 0.94 }}>
-      <span className="theme-track" aria-hidden="true">
-        <span className="theme-track-star star-one" /><span className="theme-track-star star-two" /><span className="theme-track-star star-three" />
-        <motion.span className="theme-thumb" initial={false} animate={{ x: dark ? 26 : 0 }}
-          transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 26 }}>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.svg key={theme} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"
-              initial={{ opacity: 0, rotate: reduced ? 0 : -80, scale: reduced ? 1 : 0.5 }}
-              animate={{ opacity: 1, rotate: 0, scale: 1 }} exit={{ opacity: 0, rotate: reduced ? 0 : 80, scale: reduced ? 1 : 0.5 }}
-              transition={{ duration: reduced ? 0 : 0.16 }}>
-              {dark ? <path d="M20.5 13A8.5 8.5 0 0 1 11 3.5 8.5 8.5 0 1 0 20.5 13Z" /> : <><circle cx="12" cy="12" r="3.5" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5" /></>}
-            </motion.svg>
-          </AnimatePresence>
+      <span className="theme-shutter" aria-hidden="true">
+        <motion.span className="theme-shutter-disc" initial={false}
+          animate={{ rotate: dark ? 180 : 0 }} transition={{ duration: reduced ? 0 : 0.65, ease }}>
+          <svg viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="8.5" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M14 5.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" />
+            <circle cx="14" cy="14" r="2" fill="var(--paper)" />
+          </svg>
         </motion.span>
+        <span className="theme-mode"><span>{dark ? 'NIGHT' : 'DAY'}</span><i /></span>
       </span>
     </motion.button>
   );
@@ -351,7 +348,13 @@ function Hero({ ready }: { ready: boolean }) {
             {['Abraham', 'Benedick.'].map((word, i) => (
               <span className="line-mask" key={word}>
                 <motion.span initial={{ y: '115%', rotate: 5 }} animate={show ? { y: 0, rotate: 0 } : {}} transition={{ duration: 1.15, delay: d(0.1 + i * 0.14), ease }}>
-                  {word.replace('.', '')}<em>{i === 1 ? '.' : ''}</em>
+                  {word.split('').map((letter, j) => (
+                    <motion.span className={'name-glyph' + (letter === '.' ? ' name-period' : '')} key={j}
+                      initial={{ y: reduced ? 0 : '120%', x: reduced ? 0 : (j % 2 ? 14 : -14), rotate: reduced ? 0 : (j % 2 ? 14 : -12), opacity: 0, filter: reduced ? 'none' : 'blur(8px)' }}
+                      animate={show ? { y: '0%', x: 0, rotate: 0, opacity: 1, filter: 'blur(0px)' } : {}}
+                      transition={{ duration: reduced ? 0 : 1.25, delay: d(0.16 + i * 0.2 + j * 0.045), ease }}
+                      >{letter}</motion.span>
+                  ))}
                 </motion.span>
               </span>
             ))}
@@ -491,8 +494,15 @@ export default function App() {
               <Reveal variant="left" skew={skew}>
                 <h3 className="statement">Different tools.<br /><em>Same curiosity.</em></h3>
                 <p className="small-copy">Security, code, and everything in between. A toolkit that keeps evolving with the next challenge.</p>
-                <div className="skill-decoration" aria-hidden="true">
-                  {'{'}<motion.span animate={{ rotate: 360 }} transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}>✳</motion.span>{'}'}
+                <div className="toolkit-mark" aria-hidden="true">
+                  <span className="toolkit-mark-label">CONNECTING THE DOTS</span>
+                  <svg viewBox="0 0 240 100" fill="none">
+                    <path d="M12 70H66L106 30H164L204 70H228" stroke="var(--line)" strokeWidth="1.5" />
+                    <motion.path d="M12 70H66L106 30H164L204 70H228" stroke="var(--red)" strokeWidth="1.5"
+                      initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 1.8, ease }} />
+                    {[ [12,70], [106,30], [164,30], [228,70] ].map(([cx,cy],i) => <circle key={i} cx={cx} cy={cy} r="4" fill="var(--paper)" stroke="var(--red)" strokeWidth="1.5" />)}
+                  </svg>
+                  <span className="toolkit-mark-foot">RESEARCH / BUILD / CREATE</span>
                 </div>
               </Reveal>
               <div className="skill-list">
