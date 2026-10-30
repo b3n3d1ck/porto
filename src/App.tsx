@@ -77,23 +77,26 @@ function useScrollSkew() {
 
 // Scroll-linked reveal: progress tracks element position, so each block animates
 // in on the way down and fully reverses on the way up. `variant` changes the gesture.
-type Variant = 'rise' | 'left' | 'right' | 'scale' | 'blur';
+type Variant = 'rise' | 'left' | 'right' | 'scale' | 'blur' | 'tilt-left' | 'tilt-right';
 function Reveal({ children, className = '', variant = 'rise', skew }: { children: ReactNode; className?: string; variant?: Variant; skew?: MotionValue<number> }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 96%', 'start 52%'] });
   const p = useSpring(scrollYProgress, { stiffness: 140, damping: 32, mass: 0.5 });
+  const tilt = variant === 'tilt-left' || variant === 'tilt-right';
+  const baseVariant = variant === 'tilt-left' ? 'left' : variant === 'tilt-right' ? 'right' : variant;
   const opacity = useTransform(p, [0, 0.75, 1], [reduced ? 1 : 0, 1, 1]);
-  const y = useTransform(p, [0, 1], [reduced || variant === 'left' || variant === 'right' ? 0 : variant === 'scale' ? 48 : 80, 0]);
-  const x = useTransform(p, [0, 1], [reduced ? 0 : variant === 'left' ? -70 : variant === 'right' ? 70 : 0, 0]);
-  const scale = useTransform(p, [0, 1], [reduced ? 1 : variant === 'scale' ? 0.9 : 1, 1]);
-  const rotateX = useTransform(p, [0, 1], [reduced || variant !== 'rise' ? 0 : 10, 0]);
-  const blurP = useTransform(p, [0, 1], [reduced || variant !== 'blur' ? 0 : 9, 0]);
+  const y = useTransform(p, [0, 1], [reduced || baseVariant === 'left' || baseVariant === 'right' ? 0 : baseVariant === 'scale' ? 48 : 80, 0]);
+  const x = useTransform(p, [0, 1], [reduced ? 0 : baseVariant === 'left' ? -70 : baseVariant === 'right' ? 70 : 0, 0]);
+  const scale = useTransform(p, [0, 1], [reduced ? 1 : baseVariant === 'scale' ? 0.9 : 1, 1]);
+  const rotateX = useTransform(p, [0, 1], [reduced || (baseVariant !== 'rise' && !tilt) ? 0 : 10, 0]);
+  const rotateY = useTransform(p, [0, 1], [reduced || !tilt ? 0 : variant === 'tilt-left' ? -14 : 14, 0]);
+  const blurP = useTransform(p, [0, 1], [reduced || baseVariant !== 'blur' ? 0 : 9, 0]);
   const filter = useTransform(blurP, (b) => `blur(${b}px)`);
   const fallback = useMotionValue(0);
   const vSkew = useTransform(skew ?? fallback, [-1, 1], [-4, 4]);
   return (
-    <motion.div ref={ref} className={className} style={{ opacity, y, x, scale, rotateX, filter, skewY: skew ? vSkew : 0, transformPerspective: 1400 }}>
+    <motion.div ref={ref} className={className} style={{ opacity, y, x, scale, rotateX, rotateY, filter, skewY: skew ? vSkew : 0, transformPerspective: 1400 }}>
       {children}
     </motion.div>
   );
@@ -175,13 +178,13 @@ function MobileMenu({ onClose, goto }: { onClose: () => void; goto: (id: string)
     return () => { document.body.style.overflow = old; window.removeEventListener('keydown', key); previous?.focus(); };
   }, [onClose]);
   return (
-    <motion.nav ref={ref} tabIndex={-1} id="mobile-nav" className="mobile-nav" aria-label="Mobile navigation"
+    <motion.nav ref={ref} tabIndex={-1} id="mobile-nav" className="mobile-nav" role="dialog" aria-modal="true" aria-label="Mobile navigation"
       initial={{ y: '-105%' }} animate={{ y: 0 }} exit={{ y: '-105%' }} transition={{ duration: reduced ? 0 : 0.65, ease }}>
-      <div className="menu-top"><span className="brand">ab<span>.</span></span><span>INDEX / 2026</span><button onClick={onClose} aria-label="Close menu">Close <b>×</b></button></div>
+      <div className="menu-top"><span className="brand">ab<span>.</span></span><button type="button" className="menu-close" onClick={(e) => { e.stopPropagation(); onClose(); }} onPointerUp={(e) => { e.stopPropagation(); onClose(); }} onTouchEnd={(e) => { e.stopPropagation(); onClose(); }} aria-label="Close menu">Close <b aria-hidden="true">×</b></button></div>
       <div className="mobile-nav-inner">
         <span className="menu-kicker">GO SOMEWHERE GOOD.</span>
         {[...nav, ['contact', 'Contact']].map(([id, label], i) => (
-          <motion.button key={id} onClick={() => goto(id)} initial={{ opacity: 0, x: -45, rotateX: -35 }} animate={{ opacity: 1, x: 0, rotateX: 0 }} transition={{ delay: reduced ? 0 : 0.18 + i * 0.065, duration: reduced ? 0 : 0.6, ease }}>
+          <motion.button key={id} type="button" className="mobile-nav-link" onClick={() => goto(id)} initial={{ opacity: 0, x: -45, rotateX: -35 }} animate={{ opacity: 1, x: 0, rotateX: 0 }} transition={{ delay: reduced ? 0 : 0.18 + i * 0.065, duration: reduced ? 0 : 0.6, ease }}>
             <span className="mobile-nav-num">0{i + 1}</span><span className="mobile-nav-label">{label}</span><Arrow />
           </motion.button>
         ))}
@@ -208,7 +211,7 @@ function ProjectCard({ index, position, onOpen, skew }: { index: number; positio
   const title = p.title.replace('Video Editing Valorant : ', '');
   const commands = ['observe --traffic', 'resolve --subdomains', 'launch --interface'];
   return (
-    <Reveal variant={position % 2 === 0 ? 'left' : 'right'}>
+    <Reveal variant={position % 2 === 0 ? 'tilt-left' : 'tilt-right'}>
       <motion.article className={'project-card palette-' + (index % 4)} style={{ skewY }} whileHover={{ y: -8 }} transition={{ duration: 0.4, ease }}>
         <button onClick={onOpen} aria-label={'Open ' + p.title}>
           <div className="project-visual" ref={ref}>
@@ -298,11 +301,18 @@ function Intro({ onDone }: { onDone: () => void }) {
   useEffect(() => {
     if (reduced) { onDone(); return; }
     let v = 0;
+    const started = performance.now();
+    const minDuration = 2600;
     const id = setInterval(() => {
-      v = Math.min(100, v + Math.floor(6 + Math.random() * 14));
+      const elapsed = performance.now() - started;
+      const remaining = Math.max(0, minDuration - elapsed);
+      // Crawl while time remains, then finish with eased steps.
+      const maxStep = remaining > 500 ? 4 : 9 + Math.floor(Math.random() * 9);
+      v = Math.min(100, v + 1 + Math.floor(Math.random() * maxStep));
+      if (remaining <= 0 && v >= 100) { setCount(100); clearInterval(id); return; }
+      if (remaining <= 0) v = Math.min(99, v);
       setCount(v);
-      if (v >= 100) clearInterval(id);
-    }, 90);
+    }, 120);
     return () => clearInterval(id);
   }, [reduced, onDone]);
   if (reduced) return null;
@@ -396,9 +406,12 @@ export default function App() {
   const [selected, setSelected] = useState<number | null>(null);
   const [openSkill, setOpenSkill] = useState<number | null>(0);
   const [copied, setCopied] = useState('Copy email');
-  const { scrollYProgress } = useScroll();
+  const { scrollYProgress, scrollY } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 130, damping: 30 });
   const skew = useScrollSkew();
+  const reducedMotion = useReducedMotion();
+  const glowY = useTransform(scrollY, [0, 3000], [0, reducedMotion ? 0 : -140]);
+  const glowOpacity = useTransform(scrollYProgress, [0, 0.12, 0.85, 1], [0.9, 1, 0.9, 0.7]);
 
   useEffect(() => {
     const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(false); };
@@ -413,6 +426,7 @@ export default function App() {
     <MotionConfig reducedMotion="user">
       <AnimatePresence>{!ready && <Intro onDone={() => setReady(true)} />}</AnimatePresence>
       <div className="background-grid" />
+      <motion.div className="background-glow" aria-hidden="true" style={{ y: glowY, opacity: glowOpacity }} />
       <motion.div className="reading-progress" style={{ scaleX: progress }} />
 
       <div className="site-shell">
