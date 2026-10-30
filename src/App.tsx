@@ -206,24 +206,6 @@ function SpatialObject() {
   );
 }
 
-// Cursor-following glow that adds depth without touching the layout.
-// Fixed layer, pointer-events none, springs behind the cursor.
-function CursorGlow() {
-  const reduced = useReducedMotion();
-  const x = useMotionValue(-400);
-  const y = useMotionValue(-400);
-  const sx = useSpring(x, { stiffness: 120, damping: 22, mass: 0.6 });
-  const sy = useSpring(y, { stiffness: 120, damping: 22, mass: 0.6 });
-  useEffect(() => {
-    if (reduced) return;
-    const move = (e: PointerEvent) => { if (e.pointerType !== 'touch') { x.set(e.clientX); y.set(e.clientY); } };
-    window.addEventListener('pointermove', move, { passive: true });
-    return () => window.removeEventListener('pointermove', move);
-  }, [reduced, x, y]);
-  if (reduced) return null;
-  return <motion.div className="cursor-glow" aria-hidden="true" style={{ x: sx, y: sy }} />;
-}
-
 function MobileMenu({ onClose, goto }: { onClose: () => void; goto: (id: string) => void }) {
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
@@ -494,7 +476,6 @@ export default function App() {
       <AnimatePresence>{!ready && <Intro onDone={() => setReady(true)} />}</AnimatePresence>
       <div className="background-grid" />
       <motion.div className="background-glow" aria-hidden="true" style={{ y: glowY, opacity: glowOpacity }} />
-      <CursorGlow />
       <motion.div className="reading-progress" style={{ scaleX: progress }} />
 
       <div className="site-shell">
