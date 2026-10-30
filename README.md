@@ -1,20 +1,56 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Abraham Benedick — Portfolio
 
-# Run and deploy your AI Studio app
+Personal portfolio site. Security research, web development, and a bit of creative work, all in one place. Built as a single-page React app with motion-driven transitions and a light/dark theme that follows the system by default.
 
-This contains everything you need to run your app locally.
+**Live:** [benedick.vercel.app](https://benedick.vercel.app/)
 
-View your app in AI Studio: https://ai.studio/apps/drive/1wjbjXRgJdC0wyv4N9uVheQ3SepThwJf9
+## Stack
 
-## Run Locally
+- **React 18** + **TypeScript**
+- **Vite** for dev server and build
+- **Tailwind CSS** for styling
+- **Framer Motion** for transitions and scroll animations
 
-**Prerequisites:**  Node.js
+## Project layout
 
+```
+src/
+  App.tsx              main app + sections
+  index.tsx            entry point
+  index.css            global styles
+  types.ts             shared types
+  data/
+    constants.ts       profile, skills, projects, experience
+    github-projects.json   pinned repos pulled into Projects
+public/
+  favicon.svg
+  robots.txt
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Content lives in `src/data/constants.ts` — profile info, skills, experience, education, and the handwritten project entries. GitHub projects are merged in from `src/data/github-projects.json`.
+
+## Running locally
+
+Prerequisites: Node.js 18+.
+
+```bash
+# install
+npm install
+
+# dev server (http://localhost:5173)
+npm run dev
+
+# production build
+npm run build
+
+# preview the build
+npm run preview
+```
+
+## Deploy
+
+Deploys to Vercel straight from `main`. Response headers (including `X-Robots-Tag: noindex`) are set in `vercel.json`.
+
+## License
+
+Personal project. All content and assets belong to Abraham Benedick.
