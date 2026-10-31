@@ -2,7 +2,7 @@ import type { SocialLink, Project, Experience, Education, TechSkill, SectionData
 import githubProjects from './github-projects.json';
 
 export const personalData = {
-  name: "Abraham Benedick",
+  name: "b3n3d1ck",
   job: "Interested in pentesting and cyber security, experienced with web security, webshell/backdoor (ethical), DDoS testing & developer, and pentesting tool. Familiar with PHP and full-stack web tech.",
   email: "abrahamtelkombandung@gmail.com",
   socials: [

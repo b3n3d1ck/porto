@@ -1,4 +1,4 @@
-# Abraham Benedick — Portfolio
+# b3n3d1ck — Portfolio
 
 Personal portfolio site. Security research, web development, and a bit of creative work, all in one place. Built as a single-page React app with motion-driven transitions and a light/dark theme that follows the system by default.
 
@@ -53,4 +53,4 @@ Deploys to Vercel straight from `main`. Response headers (including `X-Robots-Ta
 
 ## License
 
-Personal project. All content and assets belong to Abraham Benedick.
+Personal project. All content and assets belong to b3n3d1ck.

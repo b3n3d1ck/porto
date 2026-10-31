@@ -372,7 +372,7 @@ function Intro({ onDone }: { onDone: () => void }) {
         <motion.div className="intro-panel right" initial={{ y: 0 }} animate={count >= 100 ? { y: '101%' } : {}} transition={{ duration: 0.9, ease, delay: 0.3 }} />
       </motion.div>
       <motion.div className="intro-content" animate={count >= 100 ? { opacity: 0, scale: 1.08 } : {}} transition={{ duration: 0.5, ease }}>
-        <span className="intro-label">ABRAHAM BENEDICK — PORTFOLIO</span>
+        <span className="intro-label">B3N3D1CK — PORTFOLIO</span>
         <div className="intro-name">
           {'ab.'.split('').map((c, i) => (
             <motion.span key={i} initial={{ y: '115%' }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.1 + i * 0.08, ease }}>{c}</motion.span>
@@ -403,8 +403,8 @@ function Hero({ ready }: { ready: boolean }) {
       </motion.div>
       <motion.div className="hero-grid" style={{ y: textY, opacity: fade }}>
         <div>
-          <h1 aria-label="Abraham Benedick.">
-            {['Abraham', 'Benedick.'].map((word, i) => (
+          <h1 aria-label="b3n3d1ck.">
+            {['b3n3d1ck'].map((word, i) => (
               <span className="line-mask" key={word}>
                 <motion.span initial={{ y: '115%', rotate: 5 }} animate={show ? { y: 0, rotate: 0 } : {}} transition={{ duration: 1.15, delay: d(0.1 + i * 0.14), ease }}>
                   {word.split('').map((letter, j) => (
@@ -431,7 +431,7 @@ function Hero({ ready }: { ready: boolean }) {
             <div className="portrait-grid" />
             <motion.div className="portrait-orbit" animate={{ rotate: 360 }} transition={{ duration: 36, repeat: Infinity, ease: 'linear' }} />
             <span className="portrait-corner">AB / PERSONAL ARCHIVE</span>
-            <img className="portrait-photo" src={profileImage} alt="Abraham Benedick" loading="eager" />
+            <img className="portrait-photo" src={profileImage} alt="b3n3d1ck" loading="eager" />
             <span className="portrait-caption">Curiosity, by design.<br /><b>Bandung, Indonesia</b></span>
             <div className="portrait-cross">+</div>
           </div>
@@ -480,7 +480,7 @@ export default function App() {
 
       <div className="site-shell">
         <header className="header">
-          <a href="#home" className="brand" onClick={(e) => { e.preventDefault(); scrollToId('home'); }} aria-label="Abraham Benedick home">ab<span>.</span></a>
+          <a href="#home" className="brand" onClick={(e) => { e.preventDefault(); scrollToId('home'); }} aria-label="b3n3d1ck home">ab<span>.</span></a>
           <nav className="desktop-nav" aria-label="Main navigation">
             {nav.map(([id, label]) => <a href={'#' + id} onClick={(e) => { e.preventDefault(); scrollToId(id); }} key={id}>{label}</a>)}
           </nav>
@@ -510,7 +510,7 @@ export default function App() {
                 <h3 className="statement">Technology is<br />a language.<br /><em>I keep exploring.</em></h3>
               </Reveal>
               <Reveal variant="right" className="intro-copy" skew={skew}>
-                <p>Saya Abraham Benedick. Mahasiswa Teknik Telekomunikasi di Telkom University, dengan ketertarikan pada <strong>web security, pengembangan web, dan jaringan.</strong></p>
+                <p>Saya b3n3d1ck. Mahasiswa Teknik Telekomunikasi di Telkom University, dengan ketertarikan pada <strong>web security, pengembangan web, dan jaringan.</strong></p>
                 <p>Dari penetration testing, PHP, dan full-stack development sampai riset di Cyber Physical System Laboratory—saya suka memahami apa yang terjadi di balik sebuah sistem.</p>
                 <p>Di luar kode, saya bercerita lewat video, film pendek, dan motion. Dua sisi yang berbeda, rasa ingin tahu yang sama.</p>
                 <a className="inline-link" href="#journey" onClick={(e) => { e.preventDefault(); scrollToId('journey'); }}>Get to know my journey <Arrow /></a>
@@ -663,7 +663,7 @@ export default function App() {
 
         <footer>
           <a href="#home" className="brand" onClick={(e) => { e.preventDefault(); scrollToId('home'); }}>ab<span>.</span></a>
-          <span>© {new Date().getFullYear()} Abraham Benedick<br /><small>Made with curiosity. Always in progress.</small></span>
+          <span>© {new Date().getFullYear()} b3n3d1ck<br /><small>Made with curiosity. Always in progress.</small></span>
           <a href="#home" className="back-top" onClick={(e) => { e.preventDefault(); scrollToId('home'); }}>Back to top ↑</a>
         </footer>
       </div>

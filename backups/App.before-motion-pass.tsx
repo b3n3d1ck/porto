@@ -43,7 +43,7 @@ function Heading({ n, title, sub }: { n: string; title: string; sub: string }) {
 
 function Portrait() {
   return (
-    <div className="portrait" aria-label="Abraham Benedick identity graphic">
+    <div className="portrait" aria-label="b3n3d1ck identity graphic">
       <div className="portrait-grid" />
       <motion.div className="portrait-orbit" animate={{ rotate: 360 }} transition={{ duration: 35, repeat: Infinity, ease: 'linear' }} />
       <span className="portrait-corner">AB / PERSONAL ARCHIVE</span>
@@ -163,8 +163,8 @@ function Hero() {
       </div>
       <motion.div className="hero-grid" style={{ y: textY }}>
         <div>
-          <h1 aria-label="Abraham Benedick.">
-            {['Abraham', 'Benedick.'].map((word, i) => (
+          <h1 aria-label="b3n3d1ck.">
+            {['b3n3d1ck'].map((word, i) => (
               <span className="line-mask" key={word}>
                 <motion.span initial={{ y: '110%', rotate: 4 }} animate={{ y: 0, rotate: 0 }} transition={{ duration: 1.1, delay: 0.12 + i * 0.12, ease }}>
                   {word.replace('.', '')}<em>{i === 1 ? '.' : ''}</em>
@@ -216,7 +216,7 @@ export default function App() {
       <motion.div className="reading-progress" style={{ scaleX: progress }} />
       <div className="site-shell">
         <header className="header">
-          <a href="#home" className="brand" aria-label="Abraham Benedick home">ab<span>.</span></a>
+          <a href="#home" className="brand" aria-label="b3n3d1ck home">ab<span>.</span></a>
           <nav className="desktop-nav" aria-label="Main navigation">
             {nav.map(([id, label]) => <a href={'#' + id} key={id}>{label}</a>)}
           </nav>
@@ -246,7 +246,7 @@ export default function App() {
                 <h3 className="statement">Technology is<br />a language.<br /><em>I keep exploring.</em></h3>
               </Reveal>
               <Reveal className="intro-copy">
-                <p>Saya Abraham Benedick. Mahasiswa Teknik Telekomunikasi di Telkom University, dengan ketertarikan pada <strong>web security, pengembangan web, dan jaringan.</strong></p>
+                <p>Saya b3n3d1ck. Mahasiswa Teknik Telekomunikasi di Telkom University, dengan ketertarikan pada <strong>web security, pengembangan web, dan jaringan.</strong></p>
                 <p>Dari penetration testing, PHP, dan full-stack development sampai riset di Cyber Physical System Laboratory—saya suka memahami apa yang terjadi di balik sebuah sistem.</p>
                 <p>Di luar kode, saya bercerita lewat video, film pendek, dan motion. Dua sisi yang berbeda, rasa ingin tahu yang sama.</p>
                 <a className="inline-link" href="#journey">Get to know my journey <Arrow /></a>
@@ -384,7 +384,7 @@ export default function App() {
 
         <footer>
           <a href="#home" className="brand">ab<span>.</span></a>
-          <span>© {new Date().getFullYear()} Abraham Benedick<br /><small>Made with curiosity. Always in progress.</small></span>
+          <span>© {new Date().getFullYear()} b3n3d1ck<br /><small>Made with curiosity. Always in progress.</small></span>
           <a href="#home" className="back-top">Back to top ↑</a>
         </footer>
       </div>
