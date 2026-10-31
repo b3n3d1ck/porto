@@ -269,7 +269,7 @@ function ProjectCard({ index, position, onOpen, skew }: { index: number; positio
               {isSec ? (
                 <>
                   <div className="code-window">
-                    <div className="window-top"><i /><i /><i /><span>abraham / {index === 1 ? 'research' : 'workspace'}</span></div>
+                    <div className="window-top"><i /><i /><i /><span>b3n3d1ck / {index === 1 ? 'research' : 'workspace'}</span></div>
                     <div className="code-lines">
                       <span className="code-comment">// curiosity meets engineering</span>
                       <p><em>$</em> {commands[index] ?? ('open /' + p.title.toLowerCase().split(' ').join('-'))}</p>

@@ -75,7 +75,7 @@ function ProjectCard({ index, onOpen }: { index: number; onOpen: () => void }) {
               {index < 3 ? (
                 <>
                   <div className="code-window">
-                    <div className="window-top"><i /><i /><i /><span>abraham / {index === 1 ? 'research' : 'workspace'}</span></div>
+                    <div className="window-top"><i /><i /><i /><span>b3n3d1ck / {index === 1 ? 'research' : 'workspace'}</span></div>
                     <div className="code-lines">
                       <span className="code-comment">// curiosity meets engineering</span>
                       <p><em>$</em> {commands[index]}</p>
