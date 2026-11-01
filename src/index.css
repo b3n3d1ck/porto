@@ -224,3 +224,89 @@ footer{gap:20px;flex-wrap:wrap;padding:26px 0}footer>span{font-size:9px}.back-to
 .name-glyph{display:inline-block;transform-origin:50% 90%;will-change:transform,opacity;white-space:pre}.name-period{color:var(--red)}
 .toolkit-mark{max-width:255px;margin-top:42px;padding-top:18px;border-top:1px solid var(--line)}.toolkit-mark svg{display:block;width:100%;height:auto;margin:10px 0}.toolkit-mark-label,.toolkit-mark-foot{display:block;font:8px var(--mono);letter-spacing:1.5px;color:var(--muted)}.toolkit-mark-foot{color:var(--red);font-size:7px}
 @media(max-width:640px){#work{padding-bottom:64px}.theme-toggle{min-width:88px}.toolkit-mark{max-width:220px;margin-top:28px}}
+
+/* ══════════════════════════════════════════════════════════
+   MOTION LAYER — cursor swarm, dynamic containers, typography
+   ══════════════════════════════════════════════════════════ */
+
+/* crew colours: ephemeral overlay UI, declared as tokens */
+:root{
+  --sw-0:#c30044;--sw-1:#2f8fa8;--sw-2:#c2763a;--sw-3:#7a5fd0;
+  --sw-4:#3f8f6a;--sw-5:#b0893a;--sw-6:#c04f62;--sw-7:#4a6fd0;
+}
+:root[data-theme=dark]{
+  --sw-0:#f078a1;--sw-1:#5ad3ea;--sw-2:#e6a461;--sw-3:#a98cf5;
+  --sw-4:#6fc99a;--sw-5:#d9b464;--sw-6:#ea7d8e;--sw-7:#8aa2f0;
+}
+
+/* ── cursor swarm ───────────────────────────────────────── */
+/* Unbuilt parts are held back until a cursor sets them. !important is
+   needed because framer-motion writes opacity inline on many of them. */
+body.sw-armed [data-sw]:not(.sw-set){opacity:0!important}
+body.sw-armed{cursor:none;user-select:none}
+[data-sw].sw-set{animation:sw-in .4s cubic-bezier(.22,1,.36,1) both}
+@keyframes sw-in{from{opacity:0}to{opacity:1}}
+/* one span per character so each can be carried on its own */
+.sw-ch{display:inline-block;white-space:pre}
+
+.swarm{position:fixed;inset:0;z-index:400;pointer-events:none;overflow:hidden;contain:strict;opacity:1;transition:opacity .5s cubic-bezier(.22,1,.36,1)}
+.swarm.is-leaving{opacity:0}
+.sw-stage{position:absolute;inset:0}
+
+/* ghosts: the piece being drawn or carried */
+.sw-ghost{position:absolute;top:0;left:0;will-change:transform,width,height,opacity;opacity:0;pointer-events:none}
+.sw-box{border:1px dashed var(--line);background:color-mix(in srgb,var(--red) 5%,transparent);border-radius:3px}
+.sw-frame{border:1px solid color-mix(in srgb,var(--red) 38%,transparent);background:color-mix(in srgb,var(--red) 6%,transparent);border-radius:3px}
+.sw-frame::before,.sw-frame::after{content:'';position:absolute;width:10px;height:10px;border:1.5px solid var(--red)}
+.sw-frame::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.sw-frame::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+/* a single character being typed: a slim caret block, not a dashed box */
+.sw-type{background:color-mix(in srgb,var(--red) 20%,transparent);border-bottom:1.5px solid var(--red);border-radius:1px}
+.sw-glyph{display:grid;place-items:center;white-space:pre;background:none;border:0;filter:drop-shadow(0 4px 10px #0000001f)}
+.sw-photo{overflow:hidden;border:1px solid color-mix(in srgb,var(--red) 40%,transparent);background:var(--portrait);box-shadow:0 14px 34px #00000026}
+.sw-photo img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.sw-ghost.sw-pop{animation:sw-pop .28s ease-out forwards}
+@keyframes sw-pop{to{opacity:0}}
+
+/* cursors */
+.sw-cursor{position:absolute;top:0;left:0;will-change:transform,opacity;opacity:0;display:flex;align-items:flex-start;transition:opacity .25s ease}
+.sw-cursor svg{display:block;filter:drop-shadow(0 2px 5px #00000026)}
+.sw-chip{margin:13px 0 0 -3px;font-family:var(--mono);font-size:9px;font-weight:500;line-height:1;color:#fff;background:currentColor;padding:5px 7px 6px;border-radius:0 6px 6px 6px;white-space:nowrap;display:inline-flex;gap:6px}
+.sw-chip i{font-style:normal;opacity:.75;color:#fff}
+
+/* hud */
+.sw-hud{position:fixed;left:44px;bottom:38px;display:flex;flex-direction:column;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:1.4px;color:var(--muted);text-transform:uppercase}
+.sw-hud-count{font-size:13px;color:var(--ink);letter-spacing:2px}
+.sw-hud-count span{color:var(--red)}
+.sw-skip{position:fixed;right:44px;bottom:38px;pointer-events:auto;font-family:var(--mono);font-size:10px;letter-spacing:1.2px;color:var(--muted);border:1px solid var(--line);border-radius:30px;padding:9px 15px;background:var(--paper);display:inline-flex;gap:9px;align-items:center}
+.sw-skip:hover{color:var(--ink);border-color:var(--red)}
+.sw-skip kbd{font:inherit;border:1px solid var(--line);border-radius:4px;padding:1px 5px;color:var(--red)}
+
+@media(max-width:640px){
+  .sw-hud{left:22px;bottom:26px}
+  .sw-skip{right:22px;bottom:26px}
+  .sw-chip{display:none}
+}
+
+/* ── dynamic containers ─────────────────────────────────── */
+.dyn-box{position:relative;will-change:transform}
+.dyn-rim{position:absolute;inset:-6px;width:calc(100% + 12px);height:calc(100% + 12px);pointer-events:none;z-index:1;overflow:visible;opacity:.5}
+
+/* ── masked / outlined / magnetic type ──────────────────── */
+.mask-text{display:block}
+.mask-word{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.08em;margin-bottom:-.08em}
+.mask-word>span{display:inline-block;white-space:pre}
+.mask-word:not(:last-child)::after{content:' ';white-space:pre}
+
+.outline-fill{position:relative;display:inline-block;white-space:pre-wrap}
+.of-hollow{color:transparent;-webkit-text-stroke:1.2px color-mix(in srgb,var(--ink) 36%,transparent);display:inline-block}
+.of-solid{position:absolute;inset:0;color:var(--red);display:inline-block;white-space:pre-wrap;will-change:clip-path}
+
+.mag-chars{display:inline-block}
+.mag-char{display:inline-block;will-change:transform;transition:transform .42s cubic-bezier(.22,1,.36,1),color .3s ease}
+
+@media(prefers-reduced-motion:reduce){
+  .swarm{display:none}
+  .mag-char,.dyn-box{transform:none!important;transition:none!important}
+  .of-solid{clip-path:none!important}
+}

@@ -4,6 +4,9 @@ import {
   useReducedMotion, useMotionValue, useVelocity, type MotionValue,
 } from 'framer-motion';
 import { personalData, projectsData, experienceData, educationData, techSkillsData } from './data/constants';
+import CursorSwarm from './motion/CursorSwarm';
+import { useSmoothScroll, smoothTo } from './motion/useSmoothScroll';
+import { DynamicBox, MaskText, OutlineFill, ColorShift, MagneticChars } from './motion/effects';
 
 const nav = [['about', 'Intro'], ['work', 'Projects'], ['skills', 'Expertise'], ['journey', 'Journey']];
 const profileImage = 'https://avatars.githubusercontent.com/u/210241355?s=1500&u=a47d9edf605320c59a68d24a1f8cd856916b5e37&v=200';
@@ -62,8 +65,7 @@ function Arrow({ diagonal = true }: { diagonal?: boolean }) {
 function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
-  const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
-  el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  smoothTo(el, -30);
 }
 
 // Shared scroll-velocity signal: a damped value in roughly [-1, 1] that every
@@ -116,7 +118,7 @@ function Heading({ n, title, sub, skew }: { n: string; title: string; sub: strin
             {c === ' ' ? ' ' : c}
           </motion.span>
         ))}</h2>
-        <span className="section-sub">{sub}</span>
+        <span className="section-sub"><ColorShift>{sub}</ColorShift></span>
       </div>
     </Reveal>
   );
@@ -343,47 +345,6 @@ function ProjectDialog({ index, onClose }: { index: number; onClose: () => void 
   );
 }
 
-// Full-screen opening sequence: a counter, a wipe, then the name splits away.
-function Intro({ onDone }: { onDone: () => void }) {
-  const [count, setCount] = useState(0);
-  const reduced = useReducedMotion();
-  useEffect(() => {
-    if (reduced) { onDone(); return; }
-    let v = 0;
-    const started = performance.now();
-    const minDuration = 1300;
-    const id = setInterval(() => {
-      const elapsed = performance.now() - started;
-      const remaining = Math.max(0, minDuration - elapsed);
-      // Crawl while time remains, then finish with eased steps.
-      const maxStep = remaining > 300 ? 7 : 12 + Math.floor(Math.random() * 12);
-      v = Math.min(100, v + 2 + Math.floor(Math.random() * maxStep));
-      if (remaining <= 0 && v >= 100) { setCount(100); clearInterval(id); return; }
-      if (remaining <= 0) v = Math.min(99, v);
-      setCount(v);
-    }, 90);
-    return () => clearInterval(id);
-  }, [reduced, onDone]);
-  if (reduced) return null;
-  return (
-    <motion.div className="intro" initial={{ opacity: 1 }} exit={{ opacity: 0 }} onAnimationComplete={() => { }}>
-      <motion.div className="intro-panels" exit={{}}>
-        <motion.div className="intro-panel left" initial={{ y: 0 }} animate={count >= 100 ? { y: '-101%' } : {}} transition={{ duration: 0.9, ease, delay: 0.3 }} onAnimationComplete={() => count >= 100 && onDone()} />
-        <motion.div className="intro-panel right" initial={{ y: 0 }} animate={count >= 100 ? { y: '101%' } : {}} transition={{ duration: 0.9, ease, delay: 0.3 }} />
-      </motion.div>
-      <motion.div className="intro-content" animate={count >= 100 ? { opacity: 0, scale: 1.08 } : {}} transition={{ duration: 0.5, ease }}>
-        <span className="intro-label">ABRAHAM BENEDICK — PORTFOLIO</span>
-        <div className="intro-name">
-          {'ab.'.split('').map((c, i) => (
-            <motion.span key={i} initial={{ y: '115%' }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.1 + i * 0.08, ease }}>{c}</motion.span>
-          ))}
-        </div>
-        <div className="intro-count"><span>{String(count).padStart(3, '0')}</span><i>/ 100</i></div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
 function Hero({ ready }: { ready: boolean }) {
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
@@ -462,6 +423,9 @@ export default function App() {
   const glowY = useTransform(scrollY, [0, 3000], [0, reducedMotion ? 0 : -140]);
   const glowOpacity = useTransform(scrollYProgress, [0, 0.12, 0.85, 1], [0.9, 1, 0.9, 0.7]);
 
+  // Cinematic scroll takes over once the swarm has finished assembling.
+  useSmoothScroll(ready);
+
   useEffect(() => {
     const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(false); };
     window.addEventListener('keydown', key);
@@ -473,7 +437,7 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <AnimatePresence>{!ready && <Intro onDone={() => setReady(true)} />}</AnimatePresence>
+      <AnimatePresence>{!ready && <CursorSwarm key="swarm" onDone={() => setReady(true)} />}</AnimatePresence>
       <div className="background-grid" />
       <motion.div className="background-glow" aria-hidden="true" style={{ y: glowY, opacity: glowOpacity }} />
       <motion.div className="reading-progress" style={{ scaleX: progress }} />
@@ -500,14 +464,20 @@ export default function App() {
 
       <div className="site-shell">
         <main>
-          <Hero ready={ready} />
+          {/* The hero always renders its settled state; the swarm owns what is
+              visible while it builds, so nothing fights over inline opacity. */}
+          <Hero ready />
 
           <section id="about" className="section">
             <Heading n="01" title="A little context." sub="the person behind the work" skew={skew} />
             <div className="intro-grid">
               <Reveal variant="left" skew={skew}>
                 <span className="eyebrow">CURIOUS BY DEFAULT</span>
-                <h3 className="statement">Technology is<br />a language.<br /><em>I keep exploring.</em></h3>
+                <h3 className="statement">
+                  <MagneticChars text="Technology is" /><br />
+                  <MagneticChars text="a language." /><br />
+                  <OutlineFill text="I keep exploring." />
+                </h3>
               </Reveal>
               <Reveal variant="right" className="intro-copy" skew={skew}>
                 <p>Saya Abraham Benedick. Mahasiswa Teknik Telekomunikasi di Telkom University, dengan ketertarikan pada <strong>web security, pengembangan web, dan jaringan.</strong></p>
@@ -527,7 +497,7 @@ export default function App() {
             <Heading n="02" title="Selected projects." sub="ideas, systems & stories" skew={skew} />
             <Reveal variant="blur" skew={skew}>
               <div className="work-intro">
-                <p>A collection of things I’ve explored,<br /><strong>built, and brought to life.</strong></p>
+                <p><MaskText text="A collection of things I’ve explored, built, and brought to life." /></p>
                 <div className="filters" aria-label="Filter projects">
                   {['All', 'Development', 'Security', 'Creative'].map((f) => (
                     <button key={f} onClick={() => setFilter(f)} aria-pressed={filter === f}>
@@ -555,7 +525,10 @@ export default function App() {
             <Heading n="03" title="The working toolkit." sub="always another layer" skew={skew} />
             <div className="skills-layout">
               <Reveal variant="left" skew={skew}>
-                <h3 className="statement">Different tools.<br /><em>Same curiosity.</em></h3>
+                <h3 className="statement">
+                  <MagneticChars text="Different tools." /><br />
+                  <OutlineFill text="Same curiosity." />
+                </h3>
                 <p className="small-copy">Security, code, and everything in between. A toolkit that keeps evolving with the next challenge.</p>
                 <div className="toolkit-mark" aria-hidden="true">
                   <span className="toolkit-mark-label">CONNECTING THE DOTS</span>
@@ -622,11 +595,13 @@ export default function App() {
                   </Reveal>
                 ))}
                 <Reveal variant="scale" skew={skew}>
-                  <div className="note-card">
-                    <span className="eyebrow">A PERSONAL REMINDER</span>
-                    <p>Stay a beginner.<br />Keep asking why.<br /><em>Make it matter.</em></p>
-                    <span className="note-star">✳</span>
-                  </div>
+                  <DynamicBox depth={34} velocity={skew}>
+                    <div className="note-card">
+                      <span className="eyebrow">A PERSONAL REMINDER</span>
+                      <p>Stay a beginner.<br />Keep asking why.<br /><em>Make it matter.</em></p>
+                      <span className="note-star">✳</span>
+                    </div>
+                  </DynamicBox>
                 </Reveal>
               </div>
             </div>
@@ -641,10 +616,11 @@ export default function App() {
             <Heading n="05" title="Start a conversation." sub="good things begin here" skew={skew} />
             <TraceLine className="trace-contact" />
             <Reveal variant="scale" skew={skew}>
+              <DynamicBox depth={20} velocity={skew} className="contact-box">
               <div className="contact-grid">
                 <div>
                   <span className="eyebrow">HAVE SOMETHING IN MIND?</span>
-                  <h2>Let’s make<br /><em>it happen.</em><span className="contact-star">✳</span></h2>
+                  <h2><MagneticChars text="Let’s make" /><br /><OutlineFill text="it happen." /><span className="contact-star">✳</span></h2>
                   <p>Project baru, ide menarik, atau sekadar bertukar perspektif.<br />Saya selalu terbuka untuk percakapan yang baik.</p>
                   <Magnetic><a className="button button-dark" href={'mailto:' + personalData.email}>Say hello <Arrow /></a></Magnetic>
                 </div>
@@ -657,6 +633,7 @@ export default function App() {
                   </div>
                 </div>
               </div>
+              </DynamicBox>
             </Reveal>
           </section>
         </main>
