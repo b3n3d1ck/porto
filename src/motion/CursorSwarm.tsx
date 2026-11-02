@@ -49,7 +49,6 @@ const SCRIPT: Spec[] = [
   { sel: '.portrait', carry: 'frame', verb: 'framing', hero: true, dwell: 900 },
   { sel: '.portrait-photo', carry: 'photo', verb: 'placing photo', hero: true, dwell: 1500, within: '.portrait' },
   { sel: '.name-glyph', carry: 'glyph', verb: 'carrying', all: true, hero: true, dwell: 560 },
-  { sel: '.portrait-corner', carry: 'type', verb: 'labelling', hero: true, dwell: 420, within: '.portrait' },
   { sel: '.portrait-caption', carry: 'type', verb: 'writing', hero: true, dwell: 520, within: '.portrait' },
   { sel: '.spatial-stage', carry: 'box', verb: 'placing object', hero: true, dwell: 760 },
   { sel: '.art-note', carry: 'box', verb: 'noting', hero: true, dwell: 560 },
@@ -62,7 +61,6 @@ const SCRIPT: Spec[] = [
   { sel: '.section-heading', carry: 'frame', verb: 'framing', all: true, dwell: 700 },
   { sel: '.number', carry: 'type', verb: 'numbering', all: true, dwell: 110, chars: true, within: '.section-heading' },
   { sel: '.heading-char', carry: 'type', verb: 'typing', all: true, dwell: 100, within: '.section-heading' },
-  { sel: '.section-sub', carry: 'type', verb: 'writing', all: true, dwell: 70, chars: true, within: '.section-heading' },
 
   { sel: '.eyebrow', carry: 'type', verb: 'labelling', all: true, dwell: 70, chars: true },
   { sel: '.statement', carry: 'frame', verb: 'framing', all: true, dwell: 620 },

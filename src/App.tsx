@@ -6,7 +6,7 @@ import {
 import { personalData, projectsData, experienceData, educationData, techSkillsData } from './data/constants';
 import CursorSwarm from './motion/CursorSwarm';
 import { useSmoothScroll, smoothTo } from './motion/useSmoothScroll';
-import { DynamicBox, MaskText, OutlineFill, ColorShift, MagneticChars } from './motion/effects';
+import { DynamicBox, MaskText, OutlineFill, MagneticChars } from './motion/effects';
 
 const nav = [['about', 'Intro'], ['work', 'Projects'], ['skills', 'Expertise'], ['journey', 'Journey']];
 const profileImage = 'https://avatars.githubusercontent.com/u/210241355?s=1500&u=a47d9edf605320c59a68d24a1f8cd856916b5e37&v=200';
@@ -104,7 +104,7 @@ function Reveal({ children, className = '', variant = 'rise', skew }: { children
   );
 }
 
-function Heading({ n, title, sub, skew }: { n: string; title: string; sub: string; skew: MotionValue<number> }) {
+function Heading({ n, title, skew }: { n: string; title: string; skew: MotionValue<number> }) {
   return (
     <Reveal variant="blur" skew={skew}>
       <div className="section-heading">
@@ -118,7 +118,6 @@ function Heading({ n, title, sub, skew }: { n: string; title: string; sub: strin
             {c === ' ' ? ' ' : c}
           </motion.span>
         ))}</h2>
-        <span className="section-sub"><ColorShift>{sub}</ColorShift></span>
       </div>
     </Reveal>
   );
@@ -175,7 +174,7 @@ function Ticker({ items, speed = 40, skew, variant = 'dark' }: { items: ReactNod
   void skew;
   return (
     <div ref={ref} className={'ticker ticker-' + variant}>
-      <div className="ticker-caption"><span>{variant === 'dark' ? 'A MINDSET, NOT A MANIFESTO' : 'DISCIPLINES / CONNECTED'}</span><span>SCROLL TO MOVE ↔</span></div>
+      <div className="ticker-caption"><span>{variant === 'dark' ? 'A MINDSET, NOT A MANIFESTO' : 'DISCIPLINES / CONNECTED'}</span></div>
       <motion.div className="ticker-row" style={{ x: reduced ? 0 : x }}>
         {[0, 1].map((copy) => (
           <div className="ticker-copy" key={copy} aria-hidden={copy === 1}>
@@ -199,11 +198,9 @@ function SpatialObject() {
     <div className="spatial-stage" aria-label="Interactive three-dimensional monogram"
       onPointerMove={(e) => { if (reduced) return; const r = e.currentTarget.getBoundingClientRect(); px.set(((e.clientX - r.left) / r.width - 0.5) * 50); py.set(-((e.clientY - r.top) / r.height - 0.5) * 50); }}
       onPointerLeave={() => { px.set(0); py.set(0); }}>
-      <span className="spatial-label">EXPERIMENT 001 / MOVE AROUND</span>
       <motion.div className="spatial-cube spatial-spin" style={{ rotateX: reduced ? -18 : rx, rotateY: reduced ? 25 : ry, rotateZ: reduced ? -18 : rz }}>
         {['ab.', '↗', '{ }', '01', '+', 'ab.'].map((face, i) => <div key={i} className={'cube-face face-' + i}>{face}</div>)}
       </motion.div>
-      <span className="spatial-axis">X ─── Y ─── Z</span>
     </div>
   );
 }
@@ -391,7 +388,6 @@ function Hero({ ready }: { ready: boolean }) {
           <div className="portrait">
             <div className="portrait-grid" />
             <motion.div className="portrait-orbit" animate={{ rotate: 360 }} transition={{ duration: 36, repeat: Infinity, ease: 'linear' }} />
-            <span className="portrait-corner">AB / PERSONAL ARCHIVE</span>
             <img className="portrait-photo" src={profileImage} alt="b3n3d1ck" loading="eager" />
             <span className="portrait-caption">Curiosity, by design.<br /><b>Bandung, Indonesia</b></span>
             <div className="portrait-cross">+</div>
@@ -402,7 +398,6 @@ function Hero({ ready }: { ready: boolean }) {
       </motion.div>
       <motion.div className="hero-footer" initial={{ opacity: 0 }} animate={show ? { opacity: 1 } : {}} transition={{ delay: d(0.85), duration: 0.9 }}>
         <span>TELECOMMUNICATION ENGINEERING<br /><b>TELKOM UNIVERSITY</b></span>
-        <span>SECURITY · WEB · FILM<br /><b>THREE WORLDS. ONE PERSPECTIVE.</b></span>
         <a href="#about" onClick={(e) => { e.preventDefault(); scrollToId('about'); }}>SCROLL TO EXPLORE <span className="scroll-pill">↓</span></a>
       </motion.div>
     </section>
@@ -469,7 +464,7 @@ export default function App() {
           <Hero ready />
 
           <section id="about" className="section">
-            <Heading n="01" title="A little context." sub="the person behind the work" skew={skew} />
+            <Heading n="01" title="A little context." skew={skew} />
             <div className="intro-grid">
               <Reveal variant="left" skew={skew}>
                 <span className="eyebrow">CURIOUS BY DEFAULT</span>
@@ -494,7 +489,7 @@ export default function App() {
       <div className="site-shell">
         <main>
           <section className="section" id="work">
-            <Heading n="02" title="Selected projects." sub="ideas, systems & stories" skew={skew} />
+            <Heading n="02" title="Selected projects." skew={skew} />
             <Reveal variant="blur" skew={skew}>
               <div className="work-intro">
                 <p><MaskText text="A collection of things I’ve explored, built, and brought to life." /></p>
@@ -522,14 +517,13 @@ export default function App() {
       <div className="site-shell">
         <main>
           <section id="skills" className="section">
-            <Heading n="03" title="The working toolkit." sub="always another layer" skew={skew} />
+            <Heading n="03" title="The working toolkit." skew={skew} />
             <div className="skills-layout">
               <Reveal variant="left" skew={skew}>
                 <h3 className="statement">
                   <MagneticChars text="Different tools." /><br />
                   <OutlineFill text="Same curiosity." />
                 </h3>
-                <p className="small-copy">Security, code, and everything in between. A toolkit that keeps evolving with the next challenge.</p>
                 <div className="toolkit-mark" aria-hidden="true">
                   <span className="toolkit-mark-label">CONNECTING THE DOTS</span>
                   <svg viewBox="0 0 240 100" fill="none">
@@ -565,7 +559,7 @@ export default function App() {
           </section>
 
           <section id="journey" className="section">
-            <Heading n="04" title="Learning, in motion." sub="the journey so far" skew={skew} />
+            <Heading n="04" title="Learning, in motion." skew={skew} />
             <TraceLine className="trace-journey" />
             <div className="journey-grid">
               <div>
@@ -613,13 +607,12 @@ export default function App() {
       <div className="site-shell">
         <main>
           <section id="contact" className="section contact">
-            <Heading n="05" title="Start a conversation." sub="good things begin here" skew={skew} />
+            <Heading n="05" title="Start a conversation." skew={skew} />
             <TraceLine className="trace-contact" />
             <Reveal variant="scale" skew={skew}>
               <DynamicBox depth={20} velocity={skew} className="contact-box">
               <div className="contact-grid">
                 <div>
-                  <span className="eyebrow">HAVE SOMETHING IN MIND?</span>
                   <h2><MagneticChars text="Let’s make" /><br /><OutlineFill text="it happen." /><span className="contact-star">✳</span></h2>
                   <p>Project baru, ide menarik, atau sekadar bertukar perspektif.<br />Saya selalu terbuka untuk percakapan yang baik.</p>
                   <Magnetic><a className="button button-dark" href={'mailto:' + personalData.email}>Say hello <Arrow /></a></Magnetic>
