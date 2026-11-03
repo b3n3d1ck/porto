@@ -1,5 +1,6 @@
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
+  AnimatePresence,
   motion,
   useMotionTemplate,
   useInView,
@@ -9,6 +10,7 @@ import {
   useSpring,
   useTransform,
   type MotionValue,
+  type Variants,
 } from 'framer-motion';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -226,6 +228,183 @@ export function MagneticChars({
           {ch === ' ' ? ' ' : ch}
         </span>
       ))}
+    </span>
+  );
+}
+
+/* ───────────────────────────────────────────────────────────
+   6. SiteCursor — the browser pointer is hidden and replaced by
+   a precise dot plus a trailing ring. The ring is magnetic: over
+   any link or button it swells and is pulled toward the element's
+   centre, so it reads as clinging to what you are about to click.
+   Desktop fine-pointers only; never on touch or reduced motion.
+   ─────────────────────────────────────────────────────────── */
+
+export function SiteCursor() {
+  const reduced = useReducedMotion();
+  const dot = useRef<HTMLDivElement>(null);
+  const ring = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (reduced) return;
+    if (!window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+
+    document.body.classList.add('has-cursor');
+    let mx = window.innerWidth / 2;
+    let my = window.innerHeight / 2;
+    let rx = mx;
+    let ry = my;
+    // the ring leans toward a control's centre, but only by a few pixels, so it
+    // always stays on the pointer — the dot is what you actually click with
+    let tx = mx;
+    let ty = my;
+    let hovering = false;
+    const LEAN = 9; // max px the ring may drift from the pointer
+    // swell + lean only for compact controls, never a whole card or big surface
+    const SMALL = 230;
+
+    const move = (e: PointerEvent) => {
+      mx = e.clientX;
+      my = e.clientY;
+      if (dot.current) {
+        dot.current.style.transform = `translate3d(${mx}px, ${my}px, 0) translate(-50%, -50%)`;
+      }
+      const el = (e.target as HTMLElement | null)?.closest(
+        'a, button, [data-cursor], .theme-toggle, .skill-item button',
+      ) as HTMLElement | null;
+      if (el) {
+        const r = el.getBoundingClientRect();
+        hovering = Math.max(r.width, r.height) < SMALL;
+        if (hovering) {
+          let px = r.left + r.width / 2 - mx;
+          let py = r.top + r.height / 2 - my;
+          const d = Math.hypot(px, py) || 1;
+          if (d > LEAN) { px = (px / d) * LEAN; py = (py / d) * LEAN; }
+          tx = mx + px;
+          ty = my + py;
+        } else {
+          tx = mx;
+          ty = my;
+        }
+      } else {
+        hovering = false;
+        tx = mx;
+        ty = my;
+      }
+    };
+    const down = () => document.body.classList.add('cursor-down');
+    const up = () => document.body.classList.remove('cursor-down');
+
+    window.addEventListener('pointermove', move, { passive: true });
+    window.addEventListener('pointerdown', down);
+    window.addEventListener('pointerup', up);
+
+    let raf = 0;
+    const loop = () => {
+      rx += (tx - rx) * 0.22;
+      ry += (ty - ry) * 0.22;
+      const r = ring.current;
+      if (r) {
+        r.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`;
+        if (hovering !== r.classList.contains('is-hover')) r.classList.toggle('is-hover', hovering);
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerdown', down);
+      window.removeEventListener('pointerup', up);
+      document.body.classList.remove('has-cursor', 'cursor-down');
+    };
+  }, [reduced]);
+
+  if (reduced) return null;
+  return (
+    <>
+      <div ref={ring} className="cursor-ring" aria-hidden="true" />
+      <div ref={dot} className="cursor-dot" aria-hidden="true" />
+    </>
+  );
+}
+
+/* ───────────────────────────────────────────────────────────
+   7. Stagger / cardReveal — a grid whose children cascade in, one
+   after another, when the grid first enters the viewport.
+   ─────────────────────────────────────────────────────────── */
+
+const staggerParent: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+};
+
+/** entrance variant for a grid item; drop it on the child's motion element */
+export const cardReveal: Variants = {
+  hidden: { opacity: 0, y: 46, scale: 0.96 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.72, ease: EASE } },
+};
+
+export function Stagger({
+  children,
+  className = '',
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  const reduced = useReducedMotion();
+  if (reduced) {
+    return <div className={className}>{children}</div>;
+  }
+  return (
+    <motion.div
+      className={className}
+      variants={staggerParent}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, margin: '-12% 0px' }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* ───────────────────────────────────────────────────────────
+   8. MorphText — a word that trades itself for another on hover,
+   each sliding through a soft blur so one dissolves into the next.
+   ─────────────────────────────────────────────────────────── */
+
+export function MorphText({
+  from,
+  to,
+  className = '',
+}: {
+  from: string;
+  to: string;
+  className?: string;
+}) {
+  const reduced = useReducedMotion();
+  const [hover, setHover] = useState(false);
+  if (reduced) return <span className={className}>{from}</span>;
+  return (
+    <span
+      className={`morph ${className}`}
+      onPointerEnter={() => setHover(true)}
+      onPointerLeave={() => setHover(false)}
+    >
+      <AnimatePresence initial={false} mode="popLayout">
+        <motion.span
+          key={hover ? 'to' : 'from'}
+          className="morph-word"
+          initial={{ y: '95%', filter: 'blur(7px)', opacity: 0 }}
+          animate={{ y: '0%', filter: 'blur(0px)', opacity: 1 }}
+          exit={{ y: '-95%', filter: 'blur(7px)', opacity: 0 }}
+          transition={{ duration: 0.42, ease: EASE }}
+        >
+          {hover ? to : from}
+        </motion.span>
+      </AnimatePresence>
     </span>
   );
 }

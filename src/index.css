@@ -67,7 +67,6 @@ em{color:var(--red);font-style:normal}
 .portrait-grid{position:absolute;inset:0;background-image:linear-gradient(#c300440d 1px,transparent 1px),linear-gradient(90deg,#c300440d 1px,transparent 1px);background-size:28px 28px;z-index:1}
 .portrait-photo{position:absolute;left:50%;bottom:0;transform:translateX(-50%);height:96%;width:auto;max-width:none;object-fit:cover;object-position:top center;z-index:2;filter:grayscale(.25) contrast(1.03)}
 .portrait-orbit{position:absolute;z-index:3;width:300px;height:300px;border:1px solid #c3004433;border-radius:50%;left:calc(50% - 150px);top:24px}.portrait-orbit:before{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:var(--red);top:26px;left:38px;box-shadow:0 0 0 7px #c300440d}
-.portrait-caption{position:absolute;z-index:4;left:24px;bottom:22px;font-size:14px;line-height:1.7;color:#fff;text-shadow:0 1px 10px #0006}.portrait-caption b{font-family:var(--mono);font-size:9px;font-weight:500;opacity:.85}
 .portrait-cross{position:absolute;z-index:4;right:22px;bottom:20px;font-size:26px;color:var(--red)}
 .art-note{position:absolute;z-index:5;right:-18px;bottom:2px;font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.5px;line-height:1.7;background:var(--paper);padding:13px 18px;border:1px solid var(--line);transform:rotate(-5deg);box-shadow:4px 6px 0 #c3004412}
 /* small CSS-only 3D object: pointer rotation is supplied by Framer Motion */
@@ -127,7 +126,6 @@ em{color:var(--red);font-style:normal}
 .film-time{font-family:var(--mono);font-size:7px;letter-spacing:1px}.play-icon{position:absolute;top:26px;right:22px;font-size:42px;color:#dab0c0}
 .film-frame strong{display:block;font-family:var(--display);font-size:26px;letter-spacing:-1px;line-height:1;max-width:80%;position:absolute;bottom:32px}
 .film-bottom{position:absolute;bottom:11px;font-family:var(--mono);font-size:6px;letter-spacing:1.5px}
-.film-disc{width:150px;height:150px;border:1px solid #c3004433;border-radius:50%;position:absolute;right:-24px;top:-26px;box-shadow:0 0 0 22px #c3004408,0 0 0 48px #c3004405}
 /* skills */
 .skills-layout{display:grid;grid-template-columns:1fr 1.4fr;gap:74px}
 .skill-decoration{display:flex;align-items:center;gap:22px;font-family:var(--display);font-size:84px;color:var(--muted);opacity:.55;margin-top:52px}.skill-decoration span{display:block;color:var(--red);opacity:1;font-size:62px}
@@ -182,7 +180,7 @@ h1{font-size:clamp(62px,17vw,96px);letter-spacing:-3px;line-height:1}
 .hero-description{font-size:16px;margin-top:24px;max-width:100%}
 .hero-actions{margin-top:26px;gap:22px}.button{font-size:12px;padding:15px 20px}.quiet-link{font-size:12px}
 .hero-art{width:80%;margin:0 auto;padding:0 0 12px}.portrait{height:300px}
-.portrait-orbit{width:240px;height:240px;left:calc(50% - 120px);top:14px}.portrait-caption{font-size:12px;bottom:18px;left:20px}
+.portrait-orbit{width:240px;height:240px;left:calc(50% - 120px);top:14px}
 .art-note{font-size:7px;right:-22px;padding:11px 14px;bottom:0}
 .hero-footer{font-size:7px;letter-spacing:.2px;padding-block:22px;gap:18px}.hero-footer>a{font-size:8px;gap:10px}.scroll-pill{height:32px;width:22px;font-size:14px}
 .section{padding-top:72px}
@@ -250,6 +248,11 @@ body.sw-armed{cursor:none;user-select:none}
 .swarm.is-leaving{opacity:0}
 .sw-stage{position:absolute;inset:0}
 
+/* blank-white intro: an opaque paper veil holds for 1.5s, then lifts so the
+   crew fades in beneath it — nothing stirs behind the white */
+.sw-veil{position:absolute;inset:0;z-index:5;background:var(--paper);pointer-events:none;animation:sw-veil-out .85s cubic-bezier(.4,0,.2,1) 1.5s forwards}
+@keyframes sw-veil-out{to{opacity:0}}
+
 /* ghosts: the piece being drawn or carried */
 .sw-ghost{position:absolute;top:0;left:0;will-change:transform,width,height,opacity;opacity:0;pointer-events:none}
 .sw-box{border:1px dashed var(--line);background:color-mix(in srgb,var(--red) 5%,transparent);border-radius:3px}
@@ -284,6 +287,25 @@ body.sw-armed{cursor:none;user-select:none}
   .sw-skip{right:22px;bottom:26px}
   .sw-chip{display:none}
 }
+
+/* ── custom magnetic cursor ─────────────────────────────── */
+/* native pointer hidden only once the site cursor is live (desktop only) */
+body.has-cursor,body.has-cursor *{cursor:none!important}
+.cursor-dot{position:fixed;top:0;left:0;width:7px;height:7px;border-radius:50%;background:var(--red);z-index:600;pointer-events:none;will-change:transform}
+.cursor-ring{position:fixed;top:0;left:0;width:34px;height:34px;border:1.5px solid color-mix(in srgb,var(--ink) 38%,transparent);border-radius:50%;z-index:599;pointer-events:none;will-change:transform;transition:width .28s cubic-bezier(.22,1,.36,1),height .28s cubic-bezier(.22,1,.36,1),border-color .28s ease,background .28s ease}
+.cursor-ring.is-hover{width:46px;height:46px;border-color:var(--red);background:color-mix(in srgb,var(--red) 9%,transparent)}
+body.cursor-down .cursor-ring{width:24px;height:24px;border-color:var(--red)}
+@media(hover:none),(pointer:coarse){.cursor-dot,.cursor-ring{display:none}}
+
+/* ── card 3D tilt + cursor-tracking glare ───────────────── */
+.project-card{position:relative;transform-style:preserve-3d}
+.card-glare{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;mix-blend-mode:plus-lighter;transition:opacity .35s ease}
+.project-card:hover .card-glare{opacity:1}
+:root[data-theme=dark] .card-glare{mix-blend-mode:screen}
+
+/* ── word that morphs to another on hover ───────────────── */
+.morph{position:relative;display:inline-grid;overflow:hidden;vertical-align:bottom}
+.morph .morph-word{grid-area:1/1;display:inline-block;white-space:nowrap;will-change:transform,filter,opacity}
 
 /* ── dynamic containers ─────────────────────────────────── */
 .dyn-box{position:relative;will-change:transform}

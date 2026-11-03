@@ -49,7 +49,6 @@ const SCRIPT: Spec[] = [
   { sel: '.portrait', carry: 'frame', verb: 'framing', hero: true, dwell: 900 },
   { sel: '.portrait-photo', carry: 'photo', verb: 'placing photo', hero: true, dwell: 1500, within: '.portrait' },
   { sel: '.name-glyph', carry: 'glyph', verb: 'carrying', all: true, hero: true, dwell: 560 },
-  { sel: '.portrait-caption', carry: 'type', verb: 'writing', hero: true, dwell: 520, within: '.portrait' },
   { sel: '.spatial-stage', carry: 'box', verb: 'placing object', hero: true, dwell: 760 },
   { sel: '.art-note', carry: 'box', verb: 'noting', hero: true, dwell: 560 },
   { sel: '.hero-description', carry: 'frame', verb: 'framing copy', hero: true, dwell: 700 },
@@ -199,17 +198,23 @@ export default function CursorSwarm({ onDone }: { onDone: () => void }) {
       if (e.key === 'Escape') finish(true);
     };
 
+    // Arm immediately so the very first paint is already a blank page: the
+    // content is held back and an opaque veil (CSS) covers everything white.
+    // The crew and the scroll only wake up once INTRO_HOLD has passed and the
+    // veil has started to lift — so nothing moves behind the white.
+    body.classList.add('sw-armed');
+    // The stylesheet sets scroll-behavior:smooth; left on, every per-frame
+    // scrollTo restarts a smooth animation and the page never travels.
+    root.style.scrollBehavior = 'auto';
+    window.scrollTo(0, 0);
+    window.addEventListener('wheel', block, { passive: false });
+    window.addEventListener('touchmove', block, { passive: false });
+    window.addEventListener('keydown', blockKeys);
+
+    const INTRO_HOLD = 1500; // 1.5s of blank white before anything stirs
+
     const boot = window.setTimeout(() => {
       if (cancelled) return;
-
-      body.classList.add('sw-armed');
-      // The stylesheet sets scroll-behavior:smooth; left on, every per-frame
-      // scrollTo restarts a smooth animation and the page never travels.
-      root.style.scrollBehavior = 'auto';
-      window.scrollTo(0, 0);
-      window.addEventListener('wheel', block, { passive: false });
-      window.addEventListener('touchmove', block, { passive: false });
-      window.addEventListener('keydown', blockKeys);
 
       // characters first, so the per-char targets exist before measuring
       for (const spec of SCRIPT) {
@@ -339,7 +344,18 @@ export default function CursorSwarm({ onDone }: { onDone: () => void }) {
       let returnAt = 0;
       let built = 0;
       let last = performance.now();
+      const buildStart = last;
       const maxScroll = () => root.scrollHeight - vh;
+
+      // The crew arrives one at a time: a single cursor for the first beat,
+      // then a second, then the rest — never a swarm popping in at once.
+      const crewCap = (now: number) => {
+        const full = phase === 'hero' ? BUSY.hero : BUSY.descent;
+        if (phase !== 'hero') return full;
+        const t = (now - buildStart) / 1000;
+        const ramp = t < 1.1 ? 1 : t < 2.3 ? 2 : full;
+        return Math.min(full, ramp);
+      };
 
       const ready = (t: Target) => !t.dep || t.dep.set;
 
@@ -368,7 +384,7 @@ export default function CursorSwarm({ onDone }: { onDone: () => void }) {
 
         let busyInBand = 0;
         let busy = agents.reduce((n, a) => n + (a.target ? 1 : 0), 0);
-        const cap = phase === 'hero' ? BUSY.hero : BUSY.descent;
+        const cap = crewCap(now);
 
         for (const a of agents) {
           if (!a.target && phase !== 'return' && busy < cap) {
@@ -398,40 +414,47 @@ export default function CursorSwarm({ onDone }: { onDone: () => void }) {
           let tx: number, ty: number;
 
           if (!t) {
-            tx = a.park.x;
-            ty = a.park.y + scrollPos;
+            // idle cursors hold exactly where they are (hidden) — they never
+            // drift around with nothing to do.
+            tx = a.x;
+            ty = a.y;
           } else {
             if (t.y + t.h > scrollPos && t.y < scrollPos + vh) busyInBand++;
             const p = clamp01(1 - (a.until - now) / t.dwell);
             const e = easeInOutCubic(p);
 
             if (a.state === 'haul') {
+              // the piece is carried in from off-stage and set down exactly
+              // inside its frame — it is eased, not sprung, so it can never
+              // overshoot or slip past the edges of the box.
               const cx = a.gx + (t.x - a.gx) * e;
               const cy = a.gy + (t.y - a.gy) * e;
               if (t.ghost) {
                 t.ghost.style.transform = `translate3d(${cx}px, ${cy - scrollPos}px, 0)`;
                 t.ghost.style.opacity = '1';
               }
-              tx = cx + Math.min(t.w * 0.5, 26);
-              ty = cy + Math.min(t.h * 0.4, 18);
+              // the cursor grips the top-left corner of what it is holding,
+              // so it reads as carrying the piece rather than hovering over it
+              tx = cx + 7;
+              ty = cy + 7;
             } else {
-              // the container is pulled open from its centre
-              const w = t.w * (0.14 + 0.86 * e);
-              const h = t.h * (0.14 + 0.86 * e);
-              const cx = t.x + (t.w - w) / 2;
-              const cy = t.y + (t.h - h) / 2;
+              // the container is dragged open marquee style: the top-left
+              // corner is pinned and the cursor pulls the box out towards the
+              // bottom-right until it reaches full size, then it is set.
+              const w = t.w * e;
+              const h = t.h * e;
+              const cx = t.x;
+              const cy = t.y;
               if (t.ghost) {
                 t.ghost.style.width = `${w}px`;
                 t.ghost.style.height = `${h}px`;
                 t.ghost.style.transform = `translate3d(${cx}px, ${cy - scrollPos}px, 0)`;
-                t.ghost.style.opacity = String(Math.min(1, p * 4));
+                t.ghost.style.opacity = String(Math.min(1, p * 5));
               }
-              tx = cx + Math.min(w * 0.5, 150);
-              ty = cy + Math.min(h * 0.45, 40);
+              // the cursor tip rides exactly on the dragging corner
+              tx = cx + w;
+              ty = cy + h;
             }
-
-            tx += Math.sin(now / 190 + a.hue) * 2.2;
-            ty += Math.cos(now / 235 + a.hue) * 1.8;
 
             if (now >= a.until) {
               t.el.classList.add('sw-set');
@@ -449,9 +472,11 @@ export default function CursorSwarm({ onDone }: { onDone: () => void }) {
             }
           }
 
-          // unhurried pursuit — the crew should never look rushed
-          const stiff = a.target ? 46 : 22;
-          const damp = Math.pow(a.target ? 0.82 : 0.89, dt * 60);
+          // Unhurried but precise: a stiff, well-damped pursuit so the tip
+          // sits right on the corner it is dragging instead of trailing
+          // behind it. Idle cursors barely move (they are frozen in place).
+          const stiff = a.target ? 78 : 26;
+          const damp = Math.pow(a.target ? 0.78 : 0.9, dt * 60);
           a.vx = (a.vx + (tx - a.x) * stiff * dt) * damp;
           a.vy = (a.vy + (ty - a.y) * stiff * dt) * damp;
           a.x += a.vx * dt;
@@ -505,7 +530,7 @@ export default function CursorSwarm({ onDone }: { onDone: () => void }) {
       };
 
       raf = requestAnimationFrame(frame);
-    }, 440);
+    }, INTRO_HOLD);
 
     return () => {
       cancelled = true;
@@ -523,6 +548,9 @@ export default function CursorSwarm({ onDone }: { onDone: () => void }) {
   return (
     <div className={`swarm ${leaving ? 'is-leaving' : ''}`} aria-hidden="true">
       <div className="sw-stage" ref={stage} />
+      {/* Blank white page for the first 1.5s, then it lifts and the crew
+          fades in beneath it. */}
+      <div className="sw-veil" />
       <div className="sw-hud">
         <span className="sw-hud-label"><span ref={phaseEl}>assembling interface</span></span>
         <span className="sw-hud-count"><span ref={readout}>000</span> / 100</span>

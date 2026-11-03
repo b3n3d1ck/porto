@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   AnimatePresence, MotionConfig, motion, useScroll, useSpring, useTransform,
-  useReducedMotion, useMotionValue, useVelocity, type MotionValue,
+  useReducedMotion, useMotionValue, useMotionTemplate, useVelocity, type MotionValue,
 } from 'framer-motion';
 import { personalData, projectsData, experienceData, educationData, techSkillsData } from './data/constants';
 import CursorSwarm from './motion/CursorSwarm';
 import { useSmoothScroll, smoothTo } from './motion/useSmoothScroll';
-import { DynamicBox, MaskText, OutlineFill, MagneticChars } from './motion/effects';
+import { DynamicBox, MaskText, OutlineFill, MagneticChars, SiteCursor, Stagger, cardReveal, MorphText } from './motion/effects';
 
 const nav = [['about', 'Intro'], ['work', 'Projects'], ['skills', 'Expertise'], ['journey', 'Journey']];
 const profileImage = 'https://avatars.githubusercontent.com/u/210241355?s=1500&u=a47d9edf605320c59a68d24a1f8cd856916b5e37&v=200';
@@ -244,9 +244,10 @@ function MobileMenu({ onClose, goto }: { onClose: () => void; goto: (id: string)
   );
 }
 
-function ProjectCard({ index, position, onOpen, skew }: { index: number; position: number; onOpen: () => void; skew: MotionValue<number> }) {
+function ProjectCard({ index, position, onOpen }: { index: number; position: number; onOpen: (rect: DOMRect) => void }) {
   const p = projectsData[index];
   const ref = useRef<HTMLDivElement>(null);
+  const card = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const prog = useSpring(scrollYProgress, { stiffness: 150, damping: 30 });
@@ -254,14 +255,41 @@ function ProjectCard({ index, position, onOpen, skew }: { index: number; positio
   const dir = position % 2 === 0 ? 1 : -1;
   const objY = useTransform(prog, [0, 1], [reduced ? 0 : 40 * dir, reduced ? 0 : -40 * dir]);
   const objRot = useTransform(prog, [0, 1], [reduced ? 0 : -6 * dir, reduced ? 0 : 6 * dir]);
-  const skewY = useTransform(skew, [-1, 1], [-3, 3]);
+
+  // Pointer-driven 3D tilt + a glare that tracks the cursor across the card.
+  const tiltX = useSpring(useMotionValue(0), { stiffness: 150, damping: 18, mass: 0.4 });
+  const tiltY = useSpring(useMotionValue(0), { stiffness: 150, damping: 18, mass: 0.4 });
+  const glareX = useSpring(useMotionValue(50), { stiffness: 140, damping: 22 });
+  const glareY = useSpring(useMotionValue(0), { stiffness: 140, damping: 22 });
+  const glare = useMotionTemplate`radial-gradient(240px circle at ${glareX}% ${glareY}%, color-mix(in srgb, var(--red) 24%, transparent), transparent 60%)`;
+  const onTilt = (e: React.PointerEvent) => {
+    if (reduced || e.pointerType === 'touch' || !card.current) return;
+    const r = card.current.getBoundingClientRect();
+    const nx = (e.clientX - r.left) / r.width;
+    const ny = (e.clientY - r.top) / r.height;
+    tiltY.set((nx - 0.5) * 11);   // rotateY: left/right
+    tiltX.set(-(ny - 0.5) * 11);  // rotateX: up/down
+    glareX.set(nx * 100);
+    glareY.set(ny * 100);
+  };
+  const offTilt = () => { tiltX.set(0); tiltY.set(0); glareX.set(50); glareY.set(0); };
+
   const isSec = p.category !== 'Creative';
   const title = p.title.replace('Video Editing Valorant : ', '');
   const commands = ['observe --traffic', 'resolve --subdomains', 'launch --interface'];
   return (
-    <Reveal variant={position % 2 === 0 ? 'tilt-left' : 'tilt-right'}>
-      <motion.article className={'project-card palette-' + (index % 4)} style={{ skewY }} whileHover={{ y: -8 }} transition={{ duration: 0.4, ease }}>
-        <button onClick={onOpen} aria-label={'Open ' + p.title}>
+      <motion.article
+        ref={card}
+        className={'project-card palette-' + (index % 4)}
+        variants={reduced ? undefined : cardReveal}
+        style={{ rotateX: tiltX, rotateY: tiltY, transformPerspective: 1100 }}
+        whileHover={reduced ? undefined : { scale: 1.015 }}
+        onPointerMove={onTilt}
+        onPointerLeave={offTilt}
+        transition={{ duration: 0.4, ease }}
+      >
+        <motion.span className="card-glare" aria-hidden="true" style={{ background: reduced ? 'none' : glare }} />
+        <button onClick={() => card.current && onOpen(card.current.getBoundingClientRect())} aria-label={'Open ' + p.title}>
           <div className="project-visual" ref={ref}>
             <span className="visual-label">{p.repository ? 'GITHUB / OPEN SOURCE' : isSec ? 'SECURITY & DEVELOPMENT' : 'FILM & STORYTELLING'}</span>
             <motion.div className="project-object" style={{ y: objY, rotate: objRot }}>
@@ -287,7 +315,6 @@ function ProjectCard({ index, position, onOpen, skew }: { index: number; positio
                     <strong>{title}</strong>
                     <span className="film-bottom">A STORY WORTH TELLING</span>
                   </div>
-                  <div className="film-disc" />
                 </>
               )}
             </motion.div>
@@ -301,13 +328,26 @@ function ProjectCard({ index, position, onOpen, skew }: { index: number; positio
           </div>
         </button>
       </motion.article>
-    </Reveal>
   );
 }
 
-function ProjectDialog({ index, onClose }: { index: number; onClose: () => void }) {
+function ProjectDialog({ index, origin, onClose }: { index: number; origin: DOMRect | null; onClose: () => void }) {
   const p = projectsData[index];
   const ref = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
+
+  // Shared-element feel: the dialog grows out of the card that was clicked and
+  // shrinks back into it on close. The dialog is centred, so we offset it to
+  // the card's centre and scale it down to roughly the card's footprint.
+  const grow = (() => {
+    if (reduced || !origin) return null;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const dx = origin.left + origin.width / 2 - vw / 2;
+    const dy = origin.top + origin.height / 2 - vh / 2;
+    const s = Math.min(0.9, Math.max(0.28, origin.width / (vw * 0.62)));
+    return { x: dx, y: dy, scale: s };
+  })();
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const old = document.body.style.overflow;
@@ -329,7 +369,10 @@ function ProjectDialog({ index, onClose }: { index: number; onClose: () => void 
   return (
     <motion.div className="backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.div ref={ref} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="project-title" className="dialog"
-        initial={{ y: 80, scale: 0.94, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={{ duration: 0.45, ease }} onClick={(e) => e.stopPropagation()}>
+        initial={grow ? { ...grow, opacity: 0 } : { y: 80, scale: 0.94, opacity: 0 }}
+        animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+        exit={grow ? { ...grow, opacity: 0 } : { y: 40, opacity: 0 }}
+        transition={{ duration: 0.5, ease }} onClick={(e) => e.stopPropagation()}>
         <button className="dialog-close" onClick={onClose}>Close ×</button>
         <span className="eyebrow">PROJECT ARCHIVE / {String(index + 1).padStart(2, '0')}</span>
         <h2 id="project-title">{p.title}</h2>
@@ -389,7 +432,6 @@ function Hero({ ready }: { ready: boolean }) {
             <div className="portrait-grid" />
             <motion.div className="portrait-orbit" animate={{ rotate: 360 }} transition={{ duration: 36, repeat: Infinity, ease: 'linear' }} />
             <img className="portrait-photo" src={profileImage} alt="b3n3d1ck" loading="eager" />
-            <span className="portrait-caption">Curiosity, by design.<br /><b>Bandung, Indonesia</b></span>
             <div className="portrait-cross">+</div>
           </div>
           <SpatialObject />
@@ -409,6 +451,7 @@ export default function App() {
   const [menu, setMenu] = useState(false);
   const [filter, setFilter] = useState('All');
   const [selected, setSelected] = useState<number | null>(null);
+  const [origin, setOrigin] = useState<DOMRect | null>(null);
   const [openSkill, setOpenSkill] = useState<number | null>(0);
   const [copied, setCopied] = useState('Copy email');
   const { scrollYProgress, scrollY } = useScroll();
@@ -433,6 +476,7 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <AnimatePresence>{!ready && <CursorSwarm key="swarm" onDone={() => setReady(true)} />}</AnimatePresence>
+      {ready && <SiteCursor />}
       <div className="background-grid" />
       <motion.div className="background-glow" aria-hidden="true" style={{ y: glowY, opacity: glowOpacity }} />
       <motion.div className="reading-progress" style={{ scaleX: progress }} />
@@ -503,11 +547,11 @@ export default function App() {
                 </div>
               </div>
             </Reveal>
-            <div className="projects" key={filter}>
+            <Stagger className="projects" key={filter}>
               {projectsData.map((_, i) => i)
                 .filter((i) => filter === 'All' || projectsData[i].category === filter)
-                .map((i, pos) => <ProjectCard key={i} index={i} position={pos} onOpen={() => setSelected(i)} skew={skew} />)}
-            </div>
+                .map((i, pos) => <ProjectCard key={i} index={i} position={pos} onOpen={(rect) => { setOrigin(rect); setSelected(i); }} />)}
+            </Stagger>
           </section>
         </main>
       </div>
@@ -615,7 +659,7 @@ export default function App() {
                 <div>
                   <h2><MagneticChars text="Let’s make" /><br /><OutlineFill text="it happen." /><span className="contact-star">✳</span></h2>
                   <p>Project baru, ide menarik, atau sekadar bertukar perspektif.<br />Saya selalu terbuka untuk percakapan yang baik.</p>
-                  <Magnetic><a className="button button-dark" href={'mailto:' + personalData.email}>Say hello <Arrow /></a></Magnetic>
+                  <Magnetic><a className="button button-dark" href={'mailto:' + personalData.email} data-cursor><MorphText from="Say hello" to="Let’s talk" /> <Arrow /></a></Magnetic>
                 </div>
                 <div className="contact-links">
                   <span className="eyebrow">FIND ME ELSEWHERE</span>
@@ -638,7 +682,7 @@ export default function App() {
         </footer>
       </div>
 
-      <AnimatePresence>{selected !== null && <ProjectDialog index={selected} onClose={() => setSelected(null)} />}</AnimatePresence>
+      <AnimatePresence>{selected !== null && <ProjectDialog index={selected} origin={origin} onClose={() => setSelected(null)} />}</AnimatePresence>
     </MotionConfig>
   );
 }
