@@ -25,3 +25,10 @@ dist-ssr
 
 .vercel
 .env*
+
+# Local agent config + runtime/generated artifacts
+.claude/
+*.pid
+vuln-lab/uploads/
+recon-*.pdf
+*-test.png

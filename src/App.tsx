@@ -5,6 +5,8 @@ import {
 } from 'framer-motion';
 import { personalData, projectsData, experienceData, educationData, techSkillsData } from './data/constants';
 import CursorSwarm from './motion/CursorSwarm';
+import ReconConsole from './tools/ReconConsole';
+import AttackerLab from './tools/AttackerLab';
 import { useSmoothScroll, smoothTo } from './motion/useSmoothScroll';
 import { DynamicBox, MaskText, OutlineFill, MagneticChars, SiteCursor, Stagger, cardReveal, MorphText } from './motion/effects';
 
@@ -205,7 +207,7 @@ function SpatialObject() {
   );
 }
 
-function MobileMenu({ onClose, goto }: { onClose: () => void; goto: (id: string) => void }) {
+function MobileMenu({ onClose, goto, onRecon, onLab }: { onClose: () => void; goto: (id: string) => void; onRecon: () => void; onLab: () => void }) {
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   useEffect(() => {
@@ -236,6 +238,12 @@ function MobileMenu({ onClose, goto }: { onClose: () => void; goto: (id: string)
             <span className="mobile-nav-num">0{i + 1}</span><span className="mobile-nav-label">{label}</span><Arrow />
           </motion.button>
         ))}
+        <motion.button type="button" className="mobile-nav-link mobile-nav-tool" onClick={onRecon} initial={{ opacity: 0, x: -45, rotateX: -35 }} animate={{ opacity: 1, x: 0, rotateX: 0 }} transition={{ delay: reduced ? 0 : 0.5, duration: reduced ? 0 : 0.6, ease }}>
+          <span className="mobile-nav-num">+</span><span className="mobile-nav-label">Recon console</span><Arrow />
+        </motion.button>
+        <motion.button type="button" className="mobile-nav-link mobile-nav-tool" onClick={onLab} initial={{ opacity: 0, x: -45, rotateX: -35 }} animate={{ opacity: 1, x: 0, rotateX: 0 }} transition={{ delay: reduced ? 0 : 0.56, duration: reduced ? 0 : 0.6, ease }}>
+          <span className="mobile-nav-num">+</span><span className="mobile-nav-label">Exploit lab</span><Arrow />
+        </motion.button>
         <div className="menu-socials">{personalData.socials.filter((s) => s.name !== 'WhatsApp').map((s) => <a key={s.name} href={s.url} target="_blank" rel="noreferrer">{s.name} ↗</a>)}</div>
         <span className="mobile-nav-foot">BANDUNG, INDONESIA / ALWAYS CURIOUS.</span>
       </div>
@@ -449,6 +457,8 @@ function Hero({ ready }: { ready: boolean }) {
 export default function App() {
   const [ready, setReady] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [reconOpen, setReconOpen] = useState(false);
+  const [labOpen, setLabOpen] = useState(false);
   const [filter, setFilter] = useState('All');
   const [selected, setSelected] = useState<number | null>(null);
   const [origin, setOrigin] = useState<DOMRect | null>(null);
@@ -465,13 +475,26 @@ export default function App() {
   useSmoothScroll(ready);
 
   useEffect(() => {
-    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(false); };
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { setMenu(false); setReconOpen(false); setLabOpen(false); } };
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
   }, []);
   const closeMenu = useCallback(() => setMenu(false), []);
+  const closeRecon = useCallback(() => {
+    setReconOpen(false);
+    if (window.location.hash === '#/recon') history.replaceState(null, '', window.location.pathname + window.location.search);
+  }, []);
+
+  useEffect(() => {
+    const onHash = () => setReconOpen(window.location.hash === '#/recon');
+    window.addEventListener('hashchange', onHash);
+    onHash();
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
   const goto = (id: string) => { setMenu(false); setTimeout(() => scrollToId(id), 700); };
+  const openRecon = useCallback(() => { setMenu(false); setReconOpen(true); }, []);
+  const openLab = useCallback(() => { setMenu(false); setLabOpen(true); }, []);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -488,6 +511,8 @@ export default function App() {
             {nav.map(([id, label]) => <a href={'#' + id} onClick={(e) => { e.preventDefault(); scrollToId(id); }} key={id}>{label}</a>)}
           </nav>
           <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToId('contact'); }} className="nav-contact">Let’s talk <Arrow /></a>
+          <button type="button" className="recon-launch" onClick={() => setReconOpen(true)}><span className="recon-launch-label">Recon</span> <Arrow /></button>
+          <button type="button" className="recon-launch lab-launch" onClick={() => setLabOpen(true)}><span className="recon-launch-label">Exploit Lab</span> <Arrow /></button>
           <ThemeToggle />
           <button className={'menu-toggle ' + (menu ? 'is-open' : '')} aria-expanded={menu} aria-controls="mobile-nav" aria-label="Toggle menu" onClick={() => setMenu(!menu)}>
             <span className="burger"><i /><i /><i /></span>
@@ -497,7 +522,7 @@ export default function App() {
 
       <AnimatePresence>
         {menu && (
-          <MobileMenu onClose={closeMenu} goto={goto} />
+          <MobileMenu onClose={closeMenu} goto={goto} onRecon={openRecon} onLab={openLab} />
         )}
       </AnimatePresence>
 
@@ -683,6 +708,8 @@ export default function App() {
       </div>
 
       <AnimatePresence>{selected !== null && <ProjectDialog index={selected} origin={origin} onClose={() => setSelected(null)} />}</AnimatePresence>
+      <ReconConsole open={reconOpen} onClose={closeRecon} />
+      <AttackerLab open={labOpen} onClose={() => setLabOpen(false)} />
     </MotionConfig>
   );
 }
