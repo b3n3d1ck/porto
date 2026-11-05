@@ -174,7 +174,7 @@ export default function AttackerLab({ open, onClose }: { open: boolean; onClose:
 
       <div className="recon-body lab-body">
         {online === 'offline' && (
-          <div className="recon-offline">Lab offline. Start it with <code>node vuln-lab/server.mjs</code> (port 8790).</div>
+          <div className="recon-offline">Lab offline — this is a local-only fixture. Run <code>node vuln-lab/server.mjs</code> (port 8790) on your own machine.</div>
         )}
 
         <div className="lab-intro">

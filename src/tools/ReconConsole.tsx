@@ -203,7 +203,7 @@ export default function ReconConsole({ open, onClose }: { open: boolean; onClose
         </div>
 
         {backend === 'offline' && (
-          <div className="recon-offline">Engine offline. Start it locally with <code>node recon-server/server.mjs</code> (port 8787).</div>
+          <div className="recon-offline">Recon engine not reachable — the scanner needs its Node backend. Run locally: <code>node recon-server/server.mjs</code> (port 8787), or deploy the <code>render.yaml</code> service and set <code>VITE_RECON_API</code> to its URL.</div>
         )}
         {error && <div className="recon-error">{error}</div>}
 

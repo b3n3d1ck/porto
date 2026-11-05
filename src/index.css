@@ -467,3 +467,18 @@ body.cursor-down .cursor-ring{width:24px;height:24px;border-color:var(--red)}
 .lab-fix{font-size:12px;line-height:1.7;color:var(--muted)}
 .lab-fix b{color:#2f9e6a;font-family:var(--mono);font-size:10px;letter-spacing:1px}
 @media(max-width:640px){.lab-step-head{gap:10px;padding:14px}.lab-step-phase{display:none}.lab-step-title{font-size:13px}}
+
+/* ── FINAL header responsive overrides ─────────────────────────────────────
+   These MUST stay at the end of the file: the .recon-launch / .lab-launch
+   base rules further up set `display:flex`, and CSS source order means the
+   last matching rule wins — so the header hide rules live here to beat them. */
+@media(max-width:900px){
+  .nav-contact,.recon-launch.lab-launch{display:none}
+}
+@media(max-width:640px){
+  .header{height:84px;gap:12px;padding:0 2px}
+  .brand{font-size:30px}
+  .desktop-nav,.nav-contact,.recon-launch{display:none}
+  .theme-toggle{min-width:74px;height:40px}
+  .menu-toggle{display:grid;place-items:center;margin-left:auto;width:42px;height:42px;flex:0 0 auto}
+}

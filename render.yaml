@@ -1,0 +1,15 @@
+# Render blueprint — runs the recon engine (recon-server) as an always-on
+# Node web service so the Cloudflare Pages frontend (benedick.pages.dev) has a
+# backend to talk to instead of showing "Engine offline".
+#
+# Deploy: push this file, then on Render → New → Blueprint → connect this repo.
+# Render injects PORT automatically; the server listens on process.env.PORT.
+services:
+  - type: web
+    name: porto-recon
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node recon-server/server.mjs
+    autoDeploy: true
+    healthCheckPath: /health
