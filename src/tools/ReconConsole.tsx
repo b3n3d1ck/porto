@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const API = (import.meta as any).env?.VITE_RECON_API || 'http://localhost:8787';
+// The recon engine is a Node backend (DNS + raw TCP port scan + SQLi probing
+// — things a browser and a static host cannot do). Resolution order:
+//   1. VITE_RECON_API (set it in Cloudflare Pages to override everything)
+//   2. the always-on Render deployment when served from a real host
+//   3. localhost:8787 when running locally
+const ENV_API = (import.meta as any).env?.VITE_RECON_API as string | undefined;
+const DEPLOYED_API = 'https://porto-recon.onrender.com';
+const LOCAL_API = 'http://localhost:8787';
+const HOST = typeof window !== 'undefined' ? window.location.hostname : '';
+const IS_LOCAL = !HOST || HOST === 'localhost' || HOST === '127.0.0.1';
+const API = ENV_API || (IS_LOCAL ? LOCAL_API : DEPLOYED_API);
 
 type Severity = 'high' | 'medium' | 'low' | 'info';
 type ScanSummary = {
